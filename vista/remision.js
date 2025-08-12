@@ -296,45 +296,6 @@ function imprimirRemision(id){
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-$(document).on("change", "#factura_compra_remision_lst", function (evt) {
-    if ($("#factura_compra_remision_lst").val() === "0") {
-        $("#nota_credito").html("");
-        $("#proveedor_compra_lst").val("0");
-
-    } else {
-        let cabecera = ejecutarAjax("controladores/factura_compra.php", "id=" + $("#factura_compra_remision_lst").val());
-        console.log(cabecera);
-
-        let json_cabecera = JSON.parse(cabecera);
-        $("#id_proveedor").val(json_cabecera['cod_proveedor']);
-        $("#proveedor").val(json_cabecera['razon_social_prov']);
-
-        let data = ejecutarAjax("controladores/factura_compra_detalle.php", "id=" + $("#factura_compra_remision_lst").val());
-        console.log(data);
-        let fila = "";
-        if (data === "0") {
-            $("#ajuste_stock_compra").html("");
-        } else {
-            let json_data = JSON.parse(data);
-
-            $("#ajuste_stock_compra").html("");
-            json_data.map(function (item) {
-                $("#ajuste_stock_compra").append(`
-                    <tr>
-                        <td>${item.cod_producto}</td>
-                        <td>${item.nombre_producto}</td>
-                        <td>${item.cantidad}</td>
-                        <td><input type='number' value='${item.cantidad}' class='form-control'></td>
-                    </tr>
-                `);
-            });
-        }
-    }
-    
-});
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
-//------------------------------------------------------------------------------
 function cargarListaChofer(componente){
     let datos = ejecutarAjax("controladores/chofer.php", "leer_activo=1");
     console.log(datos);
@@ -378,7 +339,7 @@ $(document).on("change", "#factura_compra_remision_lst", function () {
         $("#motivo").val("");
         $("#punto_salida").val("");
         $("#punto_llegada").val("");
-        $("#remision_compra").html(""); // limpiar tabla
+        $("#ajuste_stock_compra").html(""); // limpiar tabla
         return;
     }
 
@@ -397,24 +358,23 @@ $(document).on("change", "#factura_compra_remision_lst", function () {
     if (json_cabecera['punto_salida']) $("#punto_salida").val(json_cabecera['punto_salida']);
     if (json_cabecera['punto_llegada']) $("#punto_llegada").val(json_cabecera['punto_llegada']);
 
-    // 2️⃣ Cargar detalle y estirarlo en la tabla remisión
+    // 2️⃣ Cargar detalle y estirarlo en la tabla de ajuste
     let data = ejecutarAjax("controladores/factura_compra_detalle.php", "id=" + facturaId);
-    $("#remision_compra").html(""); // limpiar antes de insertar
+    $("#ajuste_stock_compra").html(""); // limpiar antes de insertar
 
     if (data !== "0") {
         let json_data = JSON.parse(data);
         json_data.map(function (item) {
-            $("#remision_compra").append(`
+            $("#ajuste_stock_compra").append(`
                 <tr>
                     <td>${item.cod_producto}</td>
                     <td>${item.nombre_producto}</td>
-                    <td>${item.tipo_material ? item.tipo_material : ''}</td>
+                    <td>${item.cantidad}</td>
                     <td><input type="number" min="1" class='form-control' value="${item.cantidad}"></td>
-                    <td><button class="btn btn-danger remover-item-remision">Remover</button></td>
                 </tr>
             `);
         });
     } else {
-        $("#remision_compra").html("<tr><td colspan='5'>No hay productos en esta factura</td></tr>");
+        $("#ajuste_stock_compra").html("<tr><td colspan='4'>No hay productos en esta factura</td></tr>");
     }
 });
