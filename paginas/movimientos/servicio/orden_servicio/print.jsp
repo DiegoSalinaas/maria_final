@@ -120,7 +120,7 @@
 
             <div class="card">
                 <div class="card-header">
-                    Detalle de Orden de Servicios
+                    Detalle de Orden de Servicios Sistema
                 </div>
                 <div class="card-body">
                     <table class="table table-bordered table-striped">
@@ -146,7 +146,7 @@
                                 }
                             } else { %>
                             <tr>
-                                <td colspan="4" class="text-center">No hay servicios registrados.</td>
+                                <td colspan="4" class="text-center">No hay servicios sistema registrados.</td>
                             </tr>
                             <% }%>
                         </tbody>

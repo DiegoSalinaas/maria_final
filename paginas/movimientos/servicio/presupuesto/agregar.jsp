@@ -65,7 +65,7 @@
     </div>
 
     <div class="col-md-12">
-        <label>Observación</label>
+        <label>ObservaciÃ³n</label>
         <textarea  id="observacion" cols="30" rows="5" class="form-control"></textarea>
     </div>
 
@@ -104,7 +104,7 @@
         <hr> 
     </div>
     <div class="col-12">
-        <h4>Presupuesto de Servicios</h4>
+        <h4>Presupuesto de Servicios Sistema</h4>
     </div>
     <div class="col-md-12">
         <table class="table table-bordered table-hover table-striped">

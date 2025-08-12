@@ -78,7 +78,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Presupuesto - Diagnóstico</title>
+        <title>Presupuesto - DiagnÃ³stico</title>
         <link href="../../../../css/bootstrap.min.css" rel="stylesheet">
         <script src="../../../../js/bootstrap.min.js"></script>
         <style>
@@ -143,20 +143,20 @@
 
             <div class="card">
                 <div class="card-header">
-                    Detalle de Servicios
+                    Detalle de Servicios Sistema
                 </div>
                 <div class="card-body">
                     <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
                                 <th>Servicio</th>
-                                <th>Inversión</th>
+                                <td colspan="4" class="text-center">No hay servicios sistema registrados.</td>
                             </tr>
                         </thead>
                         <tbody>
                             <%
-                                int total = 0;
-                                if (rs_servicio.isBeforeFirst()) {
+                                <td colspan="4" class="text-center">No hay servicios sistema registrados.</td>
+                                <td colspan="4" class="text-center">No hay servicios sistema registrados.</td>
                                     while (rs_servicio.next()) {%>
                             <tr>
                                 <td><%= rs_servicio.getString("tiposervicios")%></td>
