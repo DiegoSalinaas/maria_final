@@ -396,7 +396,7 @@
                         <li class="nav-item">
                             <a class="nav-link" data-toggle="collapse" href="#form-elements" aria-expanded="false" aria-controls="form-elements">
                                 <i class="typcn typcn-film menu-icon"></i>
-                                <span class="menu-title">Servicios</span>
+                                <span class="menu-title">Servicios Sistema</span>
                                 <i class="menu-arrow"></i>
                             </a>
                             <div class="collapse" id="form-elements">
@@ -404,7 +404,7 @@
 <!--                                    <li class="nav-item"><a class="nav-link" onclick="mostrarListarPedidoCompra(); return false;" href="#">Pedido</a></li>
                                     <li class="nav-item"><a class="nav-link" href="#" onclick="mostrarListarPresupuestoCompra(); return false;">Presupuesto</a></li>-->
                                     <li class="nav-item"><a class="nav-link" href="#" onclick="mostrarListarOrdenCompra(); return false;">Presupuestos</a></li>
-                                    <li class="nav-item"><a class="nav-link" href="#" onclick="mostrarListarFacturaCompra(); return false;">Servicios</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="mostrarListarFacturaCompra(); return false;">Servicios Sistema</a></li>
 <!--                                    <li class="nav-item"><a class="nav-link" href="#" onclick="mostrarListarNotaCreditoCompra(); return false;">Nota de Credito</a></li>
                                     <li class="nav-item"><a class="nav-link" href="#" onclick="mostrarListarRemision(); return false;">Remision</a></li>
                                     <li class="nav-item"><a class="nav-link" href="#" onclick="mostrarListarAjusteStock(); return false;">Ajuste Stock</a></li>-->
