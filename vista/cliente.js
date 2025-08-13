@@ -231,38 +231,13 @@ function imprimirCliente() {
 }
 
 function cargarListaCliente(componente) {
-    let datos = ejecutarAjax("controladores/cliente.php", "leer_clientes_activos=1");
+    let datos = ejecutarAjax("controladores/cliente.php", "leer=1");
+    let option = "<option value='0'>Selecciona un cliente</option>";
 
-    let option = "";
-    if (datos === "0") {
-        option = "<option value='0'>Selecciona un cliente</option>";
-    } else {
-        option = "<option value='0'>Selecciona un cliente</option>";
+    if (datos !== "0") {
         let json_datos = JSON.parse(datos);
-        json_datos.map(function (item) {
-            option += `<option value='${item.id_cliente}'>${item.descripcion}</option>`;
-
-
-        });
-    }
-    $(componente).html(option);
-}
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-//----------------------------------------------------------------------------
-function cargarListaCliente(componente) {
-    let datos = ejecutarAjax("controladores/cliente.php", "leer_clientes_activos=1");
- 
-    let option = "";
-    if (datos === "0") {
-        option = "<option value='0'>Selecciona un cliente</option>";
-    } else {
-        option = "<option value='0'>Selecciona un cliente</option>";
-        let json_datos = JSON.parse(datos);
-        json_datos.map(function (item) {
-            option += `<option value='${item.id_cliente}-${item.costo}'>${item.descripcion}</option>`;
-
-
+        json_datos.forEach(function(item) {
+            option += `<option value='${item.cod_cliente}'>${item.nombre_cliente}</option>`;
         });
     }
     $(componente).html(option);
