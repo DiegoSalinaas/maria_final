@@ -403,7 +403,7 @@
                                 <ul class="nav flex-column sub-menu">
 <!--                                    <li class="nav-item"><a class="nav-link" onclick="mostrarListarPedidoCompra(); return false;" href="#">Pedido</a></li>
                                     <li class="nav-item"><a class="nav-link" href="#" onclick="mostrarListarPresupuestoCompra(); return false;">Presupuesto</a></li>-->
-                                    <li class="nav-item"><a class="nav-link" href="#" onclick="; return false;">Presupuestos</a></li>
+                                    <li class="nav-item"><a class="nav-link" href="#" onclick="mostrarListarPresupuestoServicio(); return false;">Presupuestos</a></li>
                                     <li class="nav-item"><a class="nav-link" href="#" onclick="; return false;">Servicios</a></li>
 <!--                                    <li class="nav-item"><a class="nav-link" href="#" onclick="mostrarListarNotaCreditoCompra(); return false;">Nota de Credito</a></li>
                                     <li class="nav-item"><a class="nav-link" href="#" onclick="mostrarListarRemision(); return false;">Remision</a></li>
