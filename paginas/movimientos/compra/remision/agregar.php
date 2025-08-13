@@ -1,7 +1,8 @@
 <div class="container-fluid card" style="padding: 30px; height: auto;" >
     <?php session_start(); ?>
     <div class="row">
-        <input type="text" id="id_cliente" hidden value="0">
+        <!-- Proveedor seleccionado -->
+        <input type="text" id="id_proveedor" hidden value="0">
         <div class="col-md-12">
             <h3>Agregar Remisión</h3>
         </div>
@@ -21,6 +22,10 @@
         <div class="col-md-4">
             <label for="descripcion">Fecha</label>
             <input type="date" id="fecha" class="form-control" placeholder=" ">
+        </div>
+        <div class="col-md-4">
+            <label for="">Proveedor</label>
+            <input type="text" id="proveedor" class="form-control" readonly>
         </div>
         <div class="col-md-12">
             <label for="">Compras</label>

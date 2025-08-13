@@ -329,43 +329,42 @@ function cargarListaFacturasComprasActivasRemision(componente) {
     $(componente).html(option);
 }
 $(document).on("change", "#factura_compra_remision_lst", function () {
-    let facturaId = $(this).val();
+    const facturaId = $(this).val();
 
     if (facturaId === "0") {
-        // Limpiar campos de cabecera
-        $("#proveedor").val("");
+        // Limpiar cabecera y detalle si no se selecciona factura
         $("#id_proveedor").val("");
+        $("#proveedor").val("");
         $("#timbrado").val("");
         $("#motivo").val("");
         $("#punto_salida").val("");
         $("#punto_llegada").val("");
-        $("#ajuste_stock_compra").html(""); // limpiar tabla
+        $("#ajuste_stock_compra").empty();
         return;
     }
 
-    // 1️⃣ Cargar cabecera de factura
-    let cabecera = ejecutarAjax("controladores/factura_compra.php", "id=" + facturaId);
+    // Cargar datos de cabecera de la factura seleccionada
+    const cabecera = ejecutarAjax("controladores/factura_compra.php", "id=" + facturaId);
     if (cabecera === "0") {
         mensaje_dialogo_info_ERROR("No se encontraron datos de factura", "ATENCIÓN");
         return;
     }
+    const jsonCab = JSON.parse(cabecera);
+    $("#id_proveedor").val(jsonCab['cod_proveedor']);
+    $("#proveedor").val(jsonCab['razon_social_prov']);
+    if (jsonCab['timbrado']) $("#timbrado").val(jsonCab['timbrado']);
+    if (jsonCab['motivo']) $("#motivo").val(jsonCab['motivo']);
+    if (jsonCab['punto_salida']) $("#punto_salida").val(jsonCab['punto_salida']);
+    if (jsonCab['punto_llegada']) $("#punto_llegada").val(jsonCab['punto_llegada']);
 
-    let json_cabecera = JSON.parse(cabecera);
-    $("#id_proveedor").val(json_cabecera['cod_proveedor']);
-    $("#proveedor").val(json_cabecera['razon_social_prov']);
-    if (json_cabecera['timbrado']) $("#timbrado").val(json_cabecera['timbrado']);
-    if (json_cabecera['motivo']) $("#motivo").val(json_cabecera['motivo']);
-    if (json_cabecera['punto_salida']) $("#punto_salida").val(json_cabecera['punto_salida']);
-    if (json_cabecera['punto_llegada']) $("#punto_llegada").val(json_cabecera['punto_llegada']);
-
-    // 2️⃣ Cargar detalle y estirarlo en la tabla de ajuste
-    let data = ejecutarAjax("controladores/factura_compra_detalle.php", "id=" + facturaId);
-    $("#ajuste_stock_compra").html(""); // limpiar antes de insertar
+    // Obtener detalle de la factura y mostrarlo en la tabla inferior
+    const data = ejecutarAjax("controladores/factura_compra_detalle.php", "id=" + facturaId);
+    const tbody = $("#ajuste_stock_compra").empty();
 
     if (data !== "0") {
-        let json_data = JSON.parse(data);
-        json_data.map(function (item) {
-            $("#ajuste_stock_compra").append(`
+        const jsonData = JSON.parse(data);
+        jsonData.forEach(item => {
+            tbody.append(`
                 <tr>
                     <td>${item.cod_producto}</td>
                     <td>${item.nombre_producto}</td>
@@ -375,6 +374,6 @@ $(document).on("change", "#factura_compra_remision_lst", function () {
             `);
         });
     } else {
-        $("#ajuste_stock_compra").html("<tr><td colspan='4'>No hay productos en esta factura</td></tr>");
+        tbody.html("<tr><td colspan='4'>No hay productos en esta factura</td></tr>");
     }
 });
