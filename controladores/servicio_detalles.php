@@ -12,7 +12,7 @@ if (isset($_POST['guardar'])) {
 function guardar($lista) {
     $json_datos = json_decode($lista, true);
     $db = new DB();
-    $query = $db->conectar()->prepare("INSERT INTO servicios (id_cliente, id_equipo, fecha_servicio, estado, tecnico, observaciones, total, created_at) VALUES (:id_cliente, :id_equipo, :fecha_servicio, :estado, :tecnico, :observaciones, :total, :created_at)");
+    $query = $db->conectar()->prepare("INSERT INTO servicio_detalles (id_servicio, descripcion, costo, estado, fecha_realizada) VALUES (:id_servicio, :descripcion, :costo, :estado, :fecha_realizada)");
     $query->execute($json_datos);
 }
 
@@ -25,7 +25,7 @@ if (isset($_POST['leer'])) {
 
 function leer() {
     $db = new DB();
-    $query = $db->conectar()->prepare("SELECT * FROM servicios");
+    $query = $db->conectar()->prepare("SELECT * FROM servicio_detalles");
     $query->execute();
     if ($query->rowCount()) {
         print_r(json_encode($query->fetchAll(PDO::FETCH_OBJ)));
@@ -43,7 +43,7 @@ if (isset($_POST['id'])) {
 
 function id($id) {
     $db = new DB();
-    $query = $db->conectar()->prepare("SELECT * FROM servicios WHERE id_servicio = $id");
+    $query = $db->conectar()->prepare("SELECT * FROM servicio_detalles WHERE id = $id");
     $query->execute();
     if ($query->rowCount()) {
         print_r(json_encode($query->fetch(PDO::FETCH_OBJ)));
@@ -62,7 +62,7 @@ if (isset($_POST['actualizar'])) {
 function actualizar($lista) {
     $json_datos = json_decode($lista, true);
     $db = new DB();
-    $query = $db->conectar()->prepare("UPDATE servicios SET id_cliente=:id_cliente, id_equipo=:id_equipo, fecha_servicio=:fecha_servicio, estado=:estado, tecnico=:tecnico, observaciones=:observaciones, total=:total, created_at=:created_at WHERE id_servicio=:id_servicio");
+    $query = $db->conectar()->prepare("UPDATE servicio_detalles SET id_servicio=:id_servicio, descripcion=:descripcion, costo=:costo, estado=:estado, fecha_realizada=:fecha_realizada WHERE id=:id");
     $query->execute($json_datos);
 }
 
@@ -75,7 +75,7 @@ if (isset($_POST['eliminar'])) {
 
 function eliminar($id) {
     $db = new DB();
-    $query = $db->conectar()->prepare("DELETE FROM servicios WHERE id_servicio = $id");
+    $query = $db->conectar()->prepare("DELETE FROM servicio_detalles WHERE id = $id");
     $query->execute();
 }
 
