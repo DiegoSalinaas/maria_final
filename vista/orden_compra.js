@@ -269,7 +269,20 @@ function cargarTablaOrdenCompra() {
       <span class="spinner-border spinner-border-sm"></span> Cargando...
     </td></tr>`);
 
-  const raw = ejecutarAjax("controladores/orden_compra.php", "leer=1");
+  const desde = $("#fecha_desde_oc").val();
+  const hasta = $("#fecha_hasta_oc").val();
+
+  if (desde && hasta && desde > hasta) {
+    mensaje_dialogo_info_ERROR("La fecha desde no puede ser mayor a la hasta", "ATENCION");
+    return;
+  }
+
+  const params = new URLSearchParams();
+  params.append("leer", 1);
+  if (desde) params.append("desde", desde);
+  if (hasta) params.append("hasta", hasta);
+
+  const raw = ejecutarAjax("controladores/orden_compra.php", params.toString());
   console.log("OC leer =>", raw);
 
   const arr = toArrayResponse(raw);
@@ -311,7 +324,20 @@ function cargarTablaOrdenCompra() {
 
 $(document).on("keyup", "#b_cliente2", function () {
   const q = $("#b_cliente2").val().trim();
-  const raw = ejecutarAjax("controladores/orden_compra.php", "leer_buscar=" + encodeURIComponent(q));
+  const desde = $("#fecha_desde_oc").val();
+  const hasta = $("#fecha_hasta_oc").val();
+
+  if (desde && hasta && desde > hasta) {
+    mensaje_dialogo_info_ERROR("La fecha desde no puede ser mayor a la hasta", "ATENCION");
+    return;
+  }
+
+  const params = new URLSearchParams();
+  params.append("leer_buscar", q);
+  if (desde) params.append("desde", desde);
+  if (hasta) params.append("hasta", hasta);
+
+  const raw = ejecutarAjax("controladores/orden_compra.php", params.toString());
   console.log("OC buscar =>", raw);
 
   const arr = toArrayResponse(raw);
@@ -349,6 +375,15 @@ $(document).on("keyup", "#b_cliente2", function () {
   });
 
   $("#orden_compra_compra").html(html);
+});
+
+$(document).on("change", "#fecha_desde_oc, #fecha_hasta_oc", function(){
+  const q = $("#b_cliente2").val().trim();
+  if (q) {
+    $("#b_cliente2").trigger("keyup");
+  } else {
+    cargarTablaOrdenCompra();
+  }
 });
 
 /* ===================== Otros eventos ===================== */
