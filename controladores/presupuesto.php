@@ -10,24 +10,30 @@ function guardar($lista) {
     //crea un arreglo del texto que se le pasa
     session_start();
     $json_datos = json_decode($lista, true);
+    $json_datos['cod_usuario'] = $_SESSION['id_user'];
+    $json_datos['cod_sucursal'] = $_SESSION['cod_sucursal'];
     $base_datos = new DB();
-    $query = $base_datos->conectar()->prepare("INSERT INTO `presupuesto`"
-            . "(`cod_presupuesto`, `fecha_presupuesto`, `fecha_vencimiento`, "
-            . "`estado_presupuesto`, `cod_pedido_compra`, `cod_proveedor`, "
-            . "`cod_sucursal`, `cod_usuario`) VALUES (:cod_presupuesto,:fecha_presupuesto,"
-            . ":fecha_vencimiento,:estado_presupuesto,:cod_pedido_compra,:cod_proveedor,"
-            . "".$_SESSION['id_user'].","
-            . "".$_SESSION['cod_sucursal'].")");
-//    $query = $base_datos->conectar()->prepare("INSERT INTO `presupuesto`
-//    (`cod_presupuesto`, `fecha_presupuesto`, `fecha_vencimiento`, 
-//    `estado_presupuesto`, `cod_pedido_compra`, `cod_proveedor`, 
-//    `cod_sucursal`, `cod_usuario`)
-//     VALUES (:cod_presupuesto, :fecha_presupuesto,
-//     :fecha_vencimiento, :estado_presupuesto, :cod_pedido_compra,
-//     :cod_proveedor, ".$_SESSION['cod_usuario'].", ".$_SESSION['cod_sucursal'].")");
-
+    $sql = "INSERT INTO presupuesto (
+                cod_presupuesto,
+                fecha_presupuesto,
+                fecha_vencimiento,
+                estado_presupuesto,
+                cod_pedido_compra,
+                cod_proveedor,
+                cod_sucursal,
+                cod_usuario)
+            VALUES (
+                :cod_presupuesto,
+                :fecha_presupuesto,
+                :fecha_vencimiento,
+                :estado_presupuesto,
+                :cod_pedido_compra,
+                :cod_proveedor,
+                :cod_sucursal,
+                :cod_usuario);";
+    $query = $base_datos->conectar()->prepare($sql);
     $query->execute($json_datos);
-    
+
     // $query2 = $base_datos->conectar()->prepare("UPDATE pedido_compra SET estado = 'PRESUPUESTADO'"
     //         . " WHERE cod_pedido_compra = :id_pedido ");
 
@@ -158,32 +164,32 @@ on dp.cod_presupuesto  = pc.cod_presupuesto
 //----------------------------------------------------------------
 //----------------------------------------------------------------
 //----------------------------------------------------------------
-if(isset($_POST['actualizar'])){
+if (isset($_POST['actualizar'])) {
     actualizar($_POST['actualizar']);
 }
 
-function actualizar($lista){
+function actualizar($lista) {
     $json_datos = json_decode($lista, true);
     $base_datos = new DB();
-    $query = $base_datos->conectar()->prepare("UPDATE `presupuesto_compra`
-     SET `fecha_presu`=:fecha_presu,
-     `fecha_vencimiento`=:fecha_vencimiento,`estado`=:estado ,`cod_pedido_compra`=:cod_pedido_compra ,
-     `cod_proveedor`=:cod_proveedor , `estado`=:estado
-     WHERE `cod_presupuesto_comp` = :cod_presupuesto_comp");
-
+    $sql = "UPDATE presupuesto SET
+                fecha_presupuesto=:fecha_presupuesto,
+                fecha_vencimiento=:fecha_vencimiento,
+                estado_presupuesto=:estado_presupuesto,
+                cod_pedido_compra=:cod_pedido_compra,
+                cod_proveedor=:cod_proveedor
+            WHERE cod_presupuesto=:cod_presupuesto";
+    $query = $base_datos->conectar()->prepare($sql);
     $query->execute($json_datos);
 }
 
-if(isset($_POST['eliminar'])){
+if (isset($_POST['eliminar'])) {
     eliminar($_POST['eliminar']);
 }
 
-function eliminar($id){
-   
+function eliminar($id) {
     $base_datos = new DB();
-    $query = $base_datos->conectar()->prepare("DELETE FROM `presupuesto_compra` where cod_presupuesto_comp = $id");
-
-    $query->execute();
+    $query = $base_datos->conectar()->prepare("DELETE FROM presupuesto WHERE cod_presupuesto = :cod");
+    $query->execute(['cod' => $id]);
 }
 
 
