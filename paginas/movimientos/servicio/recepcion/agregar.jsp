@@ -24,17 +24,17 @@
 
     <div class="col-md-3">
         <label>Sucursal</label>
-        <input type="text" class="form-control" id="sucursal" value="<%=sesion.nombre_sucur%>" readonly>
+        <input type="text" class="form-control" id="sucursal" placeholder="Ingrese sucursal">
     </div>
 
     <div class="col-md-3">
         <label>Usuario</label>
-        <input type="text" class="form-control" id="sucursal" value="<%=sesion.usuario_alias%>" readonly>
+        <input type="text" class="form-control" id="usuario" placeholder="Ingrese usuario">
     </div>
 
 
     <div class="col-md-3">
-        <label>Fecha Emisión</label>
+        <label>Fecha EmisiÃ³n</label>
         <input type="date" class="form-control" id="fecha" readonly="" min="">
     </div>
 
@@ -73,10 +73,10 @@
                 <button class="form-control btn btn-primary">Agregar Equipo</button>
             </div>
             <div class="col-md-12">
-                <label>Tipo Contraseña</label>
+                <label>Tipo ContraseÃ±a</label>
                 <select  id="tipo_contra" class="form-control chosen-select">
-                    <option value="0">Selecciona un tipo de contraseña</option>
-                    <option value="SIN CONTRASEÑA">SIN CONTRASEÑA</option>
+                    <option value="0">Selecciona un tipo de contraseÃ±a</option>
+                    <option value="SIN CONTRASEÃ‘A">SIN CONTRASEÃ‘A</option>
                     <option value="PATRON">PATRON</option>
                     <option value="PIN">PIN</option>
                     <option value="ALFANUMERICO">ALFANUMERICO</option>
@@ -92,7 +92,7 @@
     </div>
 
     <div class="col-md-12">
-        <label>Descripción</label>
+        <label>DescripciÃ³n</label>
         <textarea  id="descripcion" class="form-control" cols="30" rows="5"></textarea>
     </div>
 
@@ -109,8 +109,8 @@
                 <tr>
                     <th>#</th>
                     <th>Equipo</th>
-                    <th>Tipo contraseña</th>
-                    <th>Contraseña</th>
+                    <th>Tipo contraseÃ±a</th>
+                    <th>ContraseÃ±a</th>
                     <th>Descripcion</th>
                     <th>Operaciones</th>
                 </tr>
