@@ -396,7 +396,7 @@
                         <li class="nav-item">
                             <a class="nav-link" data-toggle="collapse" href="#form-elements" aria-expanded="false" aria-controls="form-elements">
                                 <i class="typcn typcn-film menu-icon"></i>
-                                <span class="menu-title">Servicios Sistema</span>
+                                <span class="menu-title">Servicios</span>
                                 <i class="menu-arrow"></i>
                             </a>
                             <div class="collapse" id="form-elements">
