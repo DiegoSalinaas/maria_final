@@ -21,12 +21,12 @@
     </div>
     <div class="col-md-3">
         <label>Sucursal</label>
-        <input type="text" class="form-control" id="sucursal" value="<%=sesion.nombre_sucur%>" readonly>
+        <input type="text" class="form-control" id="sucursal" placeholder="Ingrese sucursal">
     </div>
 
     <div class="col-md-3">
         <label>Usuario</label>
-        <input type="text" class="form-control" id="sucursal" value="<%=sesion.usuario_alias%>" readonly>
+        <input type="text" class="form-control" id="usuario" placeholder="Ingrese usuario">
     </div>
 
     <div class="col-md-3">
@@ -42,7 +42,7 @@
 
     <div class="col-md-12">
         <label>Diagnostico</label>
-        <select  id="diagnostico_presu_lst" class="form-control"></select>
+        <input type="text" id="diagnostico" class="form-control" placeholder="Detalle del diagnostico">
     </div>
 
     <div class="col-md-12">
