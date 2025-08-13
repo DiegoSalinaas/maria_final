@@ -1,23 +1,29 @@
-
-
-<hr> 
-<div class="row" id="tabla-busqueda">
-    <div class="col-md-3">
-            <label >Desde</label>
+<div class="container-fluid card" style="padding: 30px;">
+    <div class="row">
+        <div class="col-md-10">
+            <h3>Lista Presupuesto Servicio</h3>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary" onclick="mostrarAgregarPresupuestoServicio(); return false;"><i class="fa fa-plus"></i> Agregar</button>
+        </div>
+        <div class="col-md-12">
+            <hr>
+        </div>
+        <div class="col-md-3">
+            <label>Desde</label>
             <input type="date" id="desde" class="form-control">
         </div>
         <div class="col-md-3">
-            <label >Hasta</label>
+            <label>Hasta</label>
             <input type="date" id="hasta" class="form-control">
         </div>
         <div class="col-md-3">
-            <label >Operacion</label>
-            <button class="btn btn-primary form-control " onclick=" return false;">Buscar</button>
+            <label>Operacion</label>
+            <button class="btn btn-primary form-control" onclick="cargarTablaPresupuestoServicio(); return false;">Buscar</button>
         </div>
         <div class="col-md-12">
-            <hr> 
+            <hr>
         </div>
-    
         <div class="col-md-12">
             <table class="table table-bordered table-striped">
                 <thead>
@@ -32,6 +38,7 @@
                     </tr>
                 </thead>
                 <tbody id="presupuesto_listado_tb"></tbody>
-            </table> 
+            </table>
         </div>
+    </div>
 </div>

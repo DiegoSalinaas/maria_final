@@ -140,7 +140,7 @@
         <hr> 
     </div>
     <div class="col-md-3">
-        <button class="btn btn-success form-control" onclick="guardarPresupuestoServicio(); return false;">Confirmar</button>
+        <button id="btn-confirmar-presu-serv" class="btn btn-success form-control" onclick="guardarPresupuestoServicio(); return false;">Confirmar</button>
     </div>
 
 </div>

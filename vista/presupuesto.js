@@ -121,6 +121,109 @@ $(document).on("keyup", ".costo-presu", function (evt) {
     $(this).closest("tr").find("td:eq(4)").text(formatearNumero(costo * cantidad));
     calcularTotalPresupuesto();
 });
+
+//------------------------------------------------------------------------------
+//------ PRESUPUESTO SERVICIO --------------------------------------------------
+//------------------------------------------------------------------------------
+function mostrarListarPresupuestoServicio() {
+    let contenido = dameContenido("paginas/movimientos/servicio/presupuesto/listar.jsp");
+    $(".contenido-principal").html(contenido);
+    cargarTablaPresupuestoServicio();
+}
+
+function mostrarAgregarPresupuestoServicio() {
+    let contenido = dameContenido("paginas/movimientos/servicio/presupuesto/agregar.jsp");
+    $(".contenido-principal").html(contenido);
+}
+
+function cargarTablaPresupuestoServicio() {
+    let datos = ejecutarAjax("controladores/servicio_presupuesto.php", "leer=1");
+    let tbody = $("#presupuesto_listado_tb");
+    tbody.html("");
+    if (datos !== "0") {
+        let json = JSON.parse(datos);
+        json.forEach((item) => {
+            tbody.append(`
+                <tr>
+                    <td>${item.id}</td>
+                    <td>${item.fecha_emision}</td>
+                    <td>${item.fecha_vencimiento}</td>
+                    <td>${item.cliente_id}</td>
+                    <td>N/A</td>
+                    <td>${item.estado}</td>
+                    <td>
+                        <button class="btn btn-primary btn-sm" onclick="editarPresupuestoServicio(${item.id}); return false;">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarPresupuestoServicio(${item.id}); return false;">Eliminar</button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+}
+
+function guardarPresupuestoServicio() {
+    let lista = {
+        cliente_id: $("#id_cliente").val(),
+        fecha_emision: $("#fecha").val(),
+        fecha_vencimiento: $("#fecha_vencimiento").val(),
+        total_estimado: quitarDecimalesConvertir($("#total_presu_servicio").text()),
+        estado: "PENDIENTE",
+        observaciones: $("#observacion").val()
+    };
+
+    ejecutarAjax("controladores/servicio_presupuesto.php", "guardar=" + JSON.stringify(lista));
+    mensaje_dialogo_info("Registrado correctamente", "ATENCION");
+    mostrarListarPresupuestoServicio();
+}
+
+function editarPresupuestoServicio(id) {
+    let contenido = dameContenido("paginas/movimientos/servicio/presupuesto/agregar.jsp");
+    $(".contenido-principal").html(contenido);
+    let datos = ejecutarAjax("controladores/servicio_presupuesto.php", "id=" + id);
+    if (datos !== "0") {
+        let json = JSON.parse(datos);
+        $("#cod").val(json.id);
+        $("#fecha").val(json.fecha_emision);
+        $("#fecha_vencimiento").val(json.fecha_vencimiento);
+        $("#observacion").val(json.observaciones);
+        $("#total_presu_servicio").text(formatearNumero(json.total_estimado));
+        $("#btn-confirmar-presu-serv").text("Actualizar").attr("onclick", `actualizarPresupuestoServicio(${id}); return false;`);
+    }
+}
+
+function actualizarPresupuestoServicio(id) {
+    let lista = {
+        id: id,
+        cliente_id: $("#id_cliente").val(),
+        fecha_emision: $("#fecha").val(),
+        fecha_vencimiento: $("#fecha_vencimiento").val(),
+        total_estimado: quitarDecimalesConvertir($("#total_presu_servicio").text()),
+        estado: "PENDIENTE",
+        observaciones: $("#observacion").val()
+    };
+
+    ejecutarAjax("controladores/servicio_presupuesto.php", "actualizar=" + JSON.stringify(lista));
+    mensaje_dialogo_info("Actualizado correctamente", "ATENCION");
+    mostrarListarPresupuestoServicio();
+}
+
+function eliminarPresupuestoServicio(id) {
+    Swal.fire({
+        title: "ATENCION",
+        text: "Desea eliminar el registro?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        cancelButtonText: "No",
+        confirmButtonText: "Si"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            ejecutarAjax("controladores/servicio_presupuesto.php", "eliminar=" + id);
+            cargarTablaPresupuestoServicio();
+        }
+    });
+}
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
