@@ -2555,6 +2555,63 @@ ALTER TABLE `proyectos`
 ALTER TABLE `usuario`
   ADD CONSTRAINT `funcionario_usuario_fk` FOREIGN KEY (`cod_funcionario`) REFERENCES `funcionario` (`cod_funcionario`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   ADD CONSTRAINT `permiso_usuario_fk` FOREIGN KEY (`cod_permiso`) REFERENCES `permiso` (`cod_permiso`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+-- --------------------------------------------------------
+-- Nuevas tablas para el módulo de servicios
+-- --------------------------------------------------------
+
+CREATE TABLE `presupuestos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cliente_id` int(11) NOT NULL,
+  `fecha_emision` date NOT NULL,
+  `fecha_vencimiento` date NOT NULL,
+  `total_estimado` decimal(10,2) NOT NULL,
+  `estado` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `observaciones` text COLLATE utf8_unicode_ci,
+  PRIMARY KEY (`id`),
+  KEY `cliente_id` (`cliente_id`),
+  CONSTRAINT `presupuestos_cliente_fk` FOREIGN KEY (`cliente_id`) REFERENCES `cliente_1` (`cod_cliente`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `detalle_presupuesto` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `presupuesto_id` int(11) NOT NULL,
+  `descripcion` text COLLATE utf8_unicode_ci NOT NULL,
+  `cantidad` int(11) NOT NULL,
+  `precio_unitario` decimal(10,2) NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `presupuesto_id` (`presupuesto_id`),
+  CONSTRAINT `detalle_presupuesto_presupuesto_fk` FOREIGN KEY (`presupuesto_id`) REFERENCES `presupuestos` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `servicios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `cliente_id` int(11) NOT NULL,
+  `presupuesto_id` int(11) DEFAULT NULL,
+  `fecha_inicio` date NOT NULL,
+  `fecha_fin` date DEFAULT NULL,
+  `estado` varchar(20) COLLATE utf8_unicode_ci NOT NULL,
+  `descripcion` text COLLATE utf8_unicode_ci,
+  `costo_final` decimal(10,2) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `cliente_id` (`cliente_id`),
+  KEY `presupuesto_id` (`presupuesto_id`),
+  CONSTRAINT `servicios_cliente_fk` FOREIGN KEY (`cliente_id`) REFERENCES `cliente_1` (`cod_cliente`),
+  CONSTRAINT `servicios_presupuesto_fk` FOREIGN KEY (`presupuesto_id`) REFERENCES `presupuestos` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE `detalle_servicio` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `servicio_id` int(11) NOT NULL,
+  `descripcion` text COLLATE utf8_unicode_ci NOT NULL,
+  `cantidad` int(11) NOT NULL,
+  `costo_unitario` decimal(10,2) NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `servicio_id` (`servicio_id`),
+  CONSTRAINT `detalle_servicio_servicio_fk` FOREIGN KEY (`servicio_id`) REFERENCES `servicios` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
