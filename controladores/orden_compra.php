@@ -61,8 +61,25 @@ function guardar($raw){
 /* ===== LISTAR (resumen con total) ===== */
 function leer(){
   $db = new DB(); $cn = $db->conectar();
-  $q = $cn->prepare("
-    SELECT 
+  $desde = $_POST['desde'] ?? null;
+  $hasta = $_POST['hasta'] ?? null;
+
+  $where = "";
+  $params = [];
+  if ($desde && $hasta) {
+    $where = "WHERE oc.oc_fecha_emision BETWEEN :desde AND :hasta";
+    $params[':desde'] = $desde;
+    $params[':hasta'] = $hasta;
+  } elseif ($desde) {
+    $where = "WHERE oc.oc_fecha_emision >= :desde";
+    $params[':desde'] = $desde;
+  } elseif ($hasta) {
+    $where = "WHERE oc.oc_fecha_emision <= :hasta";
+    $params[':hasta'] = $hasta;
+  }
+
+  $sql = "
+    SELECT
       oc.cod_orden        AS cod_orden_compra,
       oc.oc_fecha_emision AS fecha_orden,
       oc.oc_estado        AS estado,
@@ -73,10 +90,12 @@ function leer(){
     JOIN proveedor pvc ON pvc.cod_proveedor = oc.cod_proveedor
     JOIN usuario   u   ON u.cod_usuario    = oc.cod_usuario
     LEFT JOIN det_orden do ON do.cod_orden = oc.cod_orden
+    $where
     GROUP BY oc.cod_orden
     ORDER BY oc.cod_orden DESC
-  ");
-  $q->execute();
+  ";
+  $q = $cn->prepare($sql);
+  $q->execute($params);
   if ($q->rowCount()){
     echo json_encode($q->fetchAll(PDO::FETCH_OBJ), JSON_UNESCAPED_UNICODE);
   } else {
@@ -84,11 +103,32 @@ function leer(){
   }
 }
 
+
 /* ===== Búsqueda ===== */
 function leer_buscar($busqueda){
   $db = new DB(); $cn = $db->conectar();
-  $q = $cn->prepare("
-    SELECT 
+  $desde = $_POST['desde'] ?? null;
+  $hasta = $_POST['hasta'] ?? null;
+
+  $where = "WHERE CONCAT(
+      oc.cod_orden,' ',oc.oc_fecha_emision,' ',oc.oc_estado,' ',
+      pvc.pro_razonsocial,' ',u.usuario_alias
+    ) LIKE :b";
+  $params = [':b'=>'%'.$busqueda.'%'];
+  if ($desde && $hasta) {
+    $where .= " AND oc.oc_fecha_emision BETWEEN :desde AND :hasta";
+    $params[':desde'] = $desde;
+    $params[':hasta'] = $hasta;
+  } elseif ($desde) {
+    $where .= " AND oc.oc_fecha_emision >= :desde";
+    $params[':desde'] = $desde;
+  } elseif ($hasta) {
+    $where .= " AND oc.oc_fecha_emision <= :hasta";
+    $params[':hasta'] = $hasta;
+  }
+
+  $sql = "
+    SELECT
       oc.cod_orden        AS cod_orden_compra,
       oc.oc_fecha_emision AS fecha_orden,
       oc.oc_estado        AS estado,
@@ -99,21 +139,20 @@ function leer_buscar($busqueda){
     JOIN proveedor pvc ON pvc.cod_proveedor = oc.cod_proveedor
     JOIN usuario   u   ON u.cod_usuario    = oc.cod_usuario
     LEFT JOIN det_orden do ON do.cod_orden = oc.cod_orden
-    WHERE CONCAT(
-      oc.cod_orden,' ',oc.oc_fecha_emision,' ',oc.oc_estado,' ',
-      pvc.pro_razonsocial,' ',u.usuario_alias
-    ) LIKE :b
+    $where
     GROUP BY oc.cod_orden
     ORDER BY oc.cod_orden DESC
     LIMIT 50
-  ");
-  $q->execute([':b'=>'%'.$busqueda.'%']);
+  ";
+  $q = $cn->prepare($sql);
+  $q->execute($params);
   if ($q->rowCount()){
     echo json_encode($q->fetchAll(PDO::FETCH_OBJ), JSON_UNESCAPED_UNICODE);
   } else {
     echo '0';
   }
 }
+
 
 /* ===== Último registro (solo informativo) ===== */
 function ultimo_registro(){

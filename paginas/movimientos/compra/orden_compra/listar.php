@@ -45,6 +45,17 @@
         </div>
       </div>
 
+      <div class="row g-2 align-items-end mb-3">
+        <div class="col-md-6">
+          <label class="form-label mb-1" for="fecha_desde_oc">Desde</label>
+          <input type="date" id="fecha_desde_oc" class="form-control">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label mb-1" for="fecha_hasta_oc">Hasta</label>
+          <input type="date" id="fecha_hasta_oc" class="form-control">
+        </div>
+      </div>
+
       <!-- Tabla -->
       <div class="table-responsive">
         <table class="table table-hover table-bordered align-middle mb-0">
