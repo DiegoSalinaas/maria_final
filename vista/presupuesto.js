@@ -137,10 +137,10 @@ function guardarPresupuestoServicio(){
     let payload = {cabecera:cab, servicios:servicios, insumos:insumos};
     let resp = "";
     if($("#editar").val()==="NO"){
-        resp = ejecutarAjax("controladores/presupuesto.php","guardar="+JSON.stringify(payload));
+        resp = ejecutarAjax("controladores/presupuesto.php","guardar="+encodeURIComponent(JSON.stringify(payload)));
     }else{
         payload.cabecera.id_presupuesto = $("#id_presupuesto").val();
-        resp = ejecutarAjax("controladores/presupuesto.php","actualizar="+JSON.stringify(payload));
+        resp = ejecutarAjax("controladores/presupuesto.php","actualizar="+encodeURIComponent(JSON.stringify(payload)));
     }
     if(resp !== "0"){
         mensaje_dialogo_info("Registro guardado","EXITO");
