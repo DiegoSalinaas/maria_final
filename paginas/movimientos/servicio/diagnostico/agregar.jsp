@@ -22,12 +22,12 @@
     </div>
     <div class="col-md-3">
         <label>Sucursal</label>
-        <input type="text" class="form-control" id="sucursal" value="<%=sesion.nombre_sucur%>" readonly>
+        <input type="text" class="form-control" id="sucursal" placeholder="Ingrese sucursal">
     </div>
 
     <div class="col-md-3">
         <label>Usuario</label>
-        <input type="text" class="form-control" id="sucursal" value="<%=sesion.usuario_alias%>" readonly>
+        <input type="text" class="form-control" id="usuario" placeholder="Ingrese usuario">
     </div>
 
     <div class="col-md-3">
@@ -59,39 +59,11 @@
     </div>
     <div class="col-md-4">
         <label>Servicio</label>
-        <select  id="servicios_lst" class="form-control chosen-select">
-            <%
-                conexion cn = new conexion();
-                cn.conectar();
-                ResultSet rscli = cn.consultar("select * from servicios where UPPER(estado_servicios) = 'ACTIVO'");
-                while (rscli.next()) {
-            %>
-
-            <option  value="<%= rscli.getString("cod_tiposervicios")%>"><%= rscli.getString("tiposervicios")%></option>
-
-            <%
-                }  
-            %>
-
-        </select>
+        <input type="text" class="form-control" id="servicio" placeholder="Detalle del servicio">
     </div>
     <div class="col-md-4">
-        <label>Insumo</label>
-        <select  id="insumo_lst" class="form-control chosen-select">
-                   <%                   
-                cn.conectar();
-                ResultSet rs = cn.consultar("select * from insumos where UPPER(estado_insumos) = 'ACTIVO' order by cod_insumos");
-                while (rs.next()) {
-            %>
-
-            <option  value="<%= rs.getString("cod_insumos")%>"><%= rs.getString("descripcion")%></option>
-
-            <%
-                }
-
-            %>
-
-        </select>
+        <label>Repuesto</label>
+        <input type="text" class="form-control" id="repuesto" placeholder="Detalle del repuesto">
     </div>
 
 
