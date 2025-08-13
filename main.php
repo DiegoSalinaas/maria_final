@@ -626,6 +626,7 @@
         <script src="vista/marca.js"></script>
         <script src="vista/pedido.js"></script>
         <script src="vista/presupuesto.js"></script>
+        <script src="vista/servicio.js"></script>
         <script src="vista/orden_compra.js"></script>
         <script src="vista/factura_compra.js"></script>
         <script src="vista/nota_credito_compra.js"></script>
