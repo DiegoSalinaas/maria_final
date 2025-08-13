@@ -1,9 +1,4 @@
-<%@page import="java.sql.ResultSet"%>
-<%@page import="clases.conexion"%>
-<input type="text" id="id_cliente" hidden >
-<input type="text" id="id_equipo"  hidden value="0" >
-<input type="text" id="iva" value="0"  hidden>
-<%@page import="clases.sesion"%>
+
 <input type="text" class="form-control form-control-sm" value="<%=sesion.cod_usuario%>" id="id_usuario" hidden>
 <input type="text" class="form-control form-control-sm" value="<%=sesion.cod_sucursal%>" id="id_sucursal" hidden>
 <div class="row">
