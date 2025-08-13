@@ -104,7 +104,7 @@
         <hr> 
     </div>
     <div class="col-12">
-        <h4>Presupuesto de Servicios Sistema</h4>
+        <h4>Presupuesto de Servicios</h4>
     </div>
     <div class="col-md-12">
         <table class="table table-bordered table-hover table-striped">
