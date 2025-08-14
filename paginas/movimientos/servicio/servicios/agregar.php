@@ -22,13 +22,9 @@
         <label>CI Cliente</label>
         <input type="text" id="ci_cliente" class="form-control" readonly>
     </div>
-    <div class="col-md-2">
+    <div class="col-md-3">
         <label>Teléfono</label>
         <input type="text" id="telefono_cliente" class="form-control" readonly>
-    </div>
-    <div class="col-md-3">
-        <label>Email</label>
-        <input type="email" id="email_cliente" class="form-control" readonly>
     </div>
     <div class="col-md-3">
         <label>Técnico Asignado</label>
@@ -51,7 +47,7 @@
     <div class="col-md-12"><h4>Detalle de Servicios</h4></div>
     <div class="col-md-3"><input type="text" id="tipo_servicio" class="form-control" placeholder="Tipo de Servicio"></div>
     <div class="col-md-3"><input type="text" id="desc_servicio" class="form-control" placeholder="Descripción"></div>
-    <div class="col-md-2"><input type="text" id="producto_rel" class="form-control" placeholder="Producto Relacionado"></div>
+    <div class="col-md-2"><select id="producto_rel" class="form-control"></select></div>
     <div class="col-md-1"><input type="number" id="cant_servicio" class="form-control" value="1" min="1" placeholder="Cant."></div>
     <div class="col-md-2"><input type="number" id="precio_servicio" class="form-control" placeholder="Precio"></div>
     <div class="col-md-1"><input type="text" id="obs_detalle" class="form-control" placeholder="Obs."></div>

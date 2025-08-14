@@ -30,6 +30,7 @@ function mostrarAgregarServicio(){
     const contenido = dameContenido("paginas/movimientos/servicio/servicios/agregar.php");
     $(".contenido-principal").html(contenido);
     cargarListaCliente("#cliente_lst");
+    cargarListaProducto("#producto_rel");
     const ultimo = ejecutarAjax("controladores/servicio.php","ultimo_registro=1");
     if(ultimo === "0"){
         $("#id_servicio").val("1");
@@ -40,16 +41,17 @@ function mostrarAgregarServicio(){
     dameFechaActual("fecha_servicio");
     $(document).off('change','#cliente_lst').on('change','#cliente_lst',function(){
         const id = $(this).val();
-        if(id==="0"){ $("#ci_cliente,#telefono_cliente,#email_cliente").val(""); return; }
+        if(id==="0"){ $("#ci_cliente,#telefono_cliente").val(""); return; }
         const datos = ejecutarAjax("controladores/cliente.php","id="+id);
-        if(datos!=="0"){ const c = JSON.parse(datos); $("#ci_cliente").val(c.ci_cliente||""); $("#telefono_cliente").val(c.telefono||""); $("#email_cliente").val(c.email_cliente||""); }
+        if(datos!=="0"){ const c = JSON.parse(datos); $("#ci_cliente").val(c.ci_cliente||""); $("#telefono_cliente").val(c.telefono||""); }
     });
 }
 
 function agregarDetalle(){
     const tipo = $("#tipo_servicio").val().trim();
     const desc = $("#desc_servicio").val().trim();
-    const prod = $("#producto_rel").val().trim();
+    const prodVal = $("#producto_rel").val();
+    const prod = prodVal === "0" ? "" : $("#producto_rel option:selected").text();
     const cant = quitarDecimalesConvertir($("#cant_servicio").val());
     const precio = quitarDecimalesConvertir($("#precio_servicio").val());
     const obs = $("#obs_detalle").val().trim();
@@ -66,7 +68,8 @@ function agregarDetalle(){
             <td>${obs}</td>
             <td><button class='btn btn-danger btn-sm quitar-detalle'>Quitar</button></td>
         </tr>`);
-    $("#tipo_servicio,#desc_servicio,#producto_rel,#cant_servicio,#precio_servicio,#obs_detalle").val("");
+    $("#tipo_servicio,#desc_servicio,#cant_servicio,#precio_servicio,#obs_detalle").val("");
+    $("#producto_rel").val("0");
     $("#cant_servicio").val(1);
 }
 
@@ -83,7 +86,6 @@ function guardarServicio(){
         id_cliente: $("#cliente_lst").val(),
         ci_cliente: $("#ci_cliente").val(),
         telefono_cliente: $("#telefono_cliente").val(),
-        email_cliente: $("#email_cliente").val(),
         fecha_servicio: $("#fecha_servicio").val(),
         estado: $("#estado_servicio").val(),
         tecnico: $("#tecnico").val(),
@@ -125,6 +127,7 @@ function editarServicio(id){
     $(".contenido-principal").html(contenido);
     $("#editar").val("SI");
     cargarListaCliente("#cliente_lst");
+    cargarListaProducto("#producto_rel");
     const datos = ejecutarAjax("controladores/servicio.php","id="+id);
     if(datos === "0") return;
     const json = JSON.parse(datos);
@@ -136,7 +139,6 @@ function editarServicio(id){
     },300);
     $("#ci_cliente").val(cab.ci_cliente);
     $("#telefono_cliente").val(cab.telefono_cliente);
-    $("#email_cliente").val(cab.email_cliente);
     $("#estado_servicio").val(cab.estado);
     $("#tecnico").val(cab.tecnico);
     $("#observaciones").val(cab.observaciones);
