@@ -271,6 +271,7 @@ function cargarTablaOrdenCompra() {
 
   const desde = $("#fecha_desde_oc").val();
   const hasta = $("#fecha_hasta_oc").val();
+  const estado = $("#estado_lst_oc").val();
 
   if (desde && hasta && desde > hasta) {
     mensaje_dialogo_info_ERROR("La fecha desde no puede ser mayor a la hasta", "ATENCION");
@@ -281,6 +282,7 @@ function cargarTablaOrdenCompra() {
   params.append("leer", 1);
   if (desde) params.append("desde", desde);
   if (hasta) params.append("hasta", hasta);
+  if (estado) params.append("estado", estado);
 
   const raw = ejecutarAjax("controladores/orden_compra.php", params.toString());
   console.log("OC leer =>", raw);
@@ -326,6 +328,7 @@ $(document).on("keyup", "#b_cliente2", function () {
   const q = $("#b_cliente2").val().trim();
   const desde = $("#fecha_desde_oc").val();
   const hasta = $("#fecha_hasta_oc").val();
+  const estado = $("#estado_lst_oc").val();
 
   if (desde && hasta && desde > hasta) {
     mensaje_dialogo_info_ERROR("La fecha desde no puede ser mayor a la hasta", "ATENCION");
@@ -336,6 +339,7 @@ $(document).on("keyup", "#b_cliente2", function () {
   params.append("leer_buscar", q);
   if (desde) params.append("desde", desde);
   if (hasta) params.append("hasta", hasta);
+  if (estado) params.append("estado", estado);
 
   const raw = ejecutarAjax("controladores/orden_compra.php", params.toString());
   console.log("OC buscar =>", raw);
@@ -386,6 +390,15 @@ $(document).on("change", "#fecha_desde_oc, #fecha_hasta_oc", function(){
   }
 });
 
+$(document).on("change", "#estado_lst_oc", function(){
+  const q = $("#b_cliente2").val().trim();
+  if (q){
+    $("#b_cliente2").trigger("keyup");
+  } else {
+    cargarTablaOrdenCompra();
+  }
+});
+
 /* ===================== Otros eventos ===================== */
 function imprimirOrdenCompra(id) {
   window.open("paginas/movimientos/compra/orden_compra/print.php?id=" + id);
@@ -418,7 +431,9 @@ $(document).on("change", "#presupuesto_compra_lst", function () {
     } else {
       const json_data = parseJSONSafe(data) || [];
       $("#orden_compra_compra").html("");
+      let omitidos = 0;
       json_data.forEach(item=>{
+        if (productoYaEnTabla(item.cod_material)) { omitidos++; return; }
         const costo = quitarDecimalesConvertir(item.costo);
         const cant  = quitarDecimalesConvertir(item.cantidad);
         $("#orden_compra_compra").append(`
@@ -434,6 +449,9 @@ $(document).on("change", "#presupuesto_compra_lst", function () {
           </tr>
         `);
       });
+      if (omitidos > 0){
+        mensaje_dialogo_info_ERROR(`Se omitieron ${omitidos} productos repetidos`, "ATENCION");
+      }
     }
   }
   calcularTotalOrdenCompra();

@@ -38,7 +38,7 @@
           <select id="estado_lst_oc" class="form-control">
             <option value="">Todos</option>
             <option value="PENDIENTE">Pendiente</option>
-            <option value="APROBADO">Aprobado</option>
+            <option value="UTILIZADO">Utilizado</option>
             <option value="ANULADO">Anulado</option>
           </select>
           <small class="text-muted">Filtro opcional por estado</small>
