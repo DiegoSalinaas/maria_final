@@ -11,17 +11,24 @@ let productoSelCache = { val: "", text: "" };
 
 $(document).on("change", "#producto_rel", function () {
   const $sel = $(this);
-  const v = String($sel.val() ?? "").trim();
-  const t = String($sel.find("option:selected").text() ?? "").trim();
-  productoSelCache = { val: v, text: t };
-   console.debug("[change #producto_rel]", productoSelCache);
+  const v = normText($sel.val());
+  const t = normText($sel.find("option:selected").text());
+  const placeholderColor = "#6c757d"; // gris bootstrap
+  // Solo actualizar la caché si se selecciona un producto válido.
+  if (v && v !== "0") {
+    productoSelCache = { val: v, text: t };
+    $sel.css("color", "");
+  } else {
+    $sel.css("color", placeholderColor);
+  }
+  console.debug("[change #producto_rel]", productoSelCache);
 });
 
 
 function getProductoSeleccionado() {
   const $sel = $("#producto_rel");
 
-  // 1) usar caché
+  // 1) usar caché (se mantiene aunque el select se limpie visualmente)
   let val = normText(productoSelCache.val);
   let text = normText(productoSelCache.text);
 
@@ -39,8 +46,8 @@ function getProductoSeleccionado() {
     /^(-+\s*)?(seleccione|seleccionar|selecciona|--|elige|elija)/i.test(text) ||
     text === "";
 
-  // válido si: (idx>0) o (value real y texto no placeholder)
-  const isValid = idx > 0 || ((val !== "" && val !== "0") && !textIsPlaceholder);
+  // válido si hay valor real y el texto no es placeholder
+  const isValid = val !== "" && val !== "0" && !textIsPlaceholder;
 
   return { idx, val, text, isValid };
 }
@@ -48,7 +55,12 @@ function getProductoSeleccionado() {
 function resetProductoSelect() {
   const $sel = $("#producto_rel");
   // volver al placeholder en índice 0 y sincronizar UI
-  $sel.prop("disabled", false).prop("selectedIndex", 0).val("").trigger("change");
+  $sel
+    .prop("disabled", false)
+    .prop("selectedIndex", 0)
+    .val("")
+    .css("color", "#6c757d")
+    .trigger("change");
   $sel.trigger("change.select2"); // si usás Select2/Chosen, no rompe en nativo
   // limpiar caché
   productoSelCache = { val: "", text: "" };
