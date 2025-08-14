@@ -16,7 +16,7 @@ function cargarListaInsumo(componente) {
 // mostrado al usuario para mantener compatibilidad con otras partes del
 // sistema que aún utilizan la denominación \"insumo\".
 function cargarListaProducto(componente) {
-    let datos = ejecutarAjax("controladores/insumo.php", "leer_activos=1");
+    let datos = ejecutarAjax("controladores/proyecto.php", "leer_activos=1");
     console.log(datos);
     let option = "<option value='0'>Selecciona un Producto</option>";
     if (datos !== "0") {
