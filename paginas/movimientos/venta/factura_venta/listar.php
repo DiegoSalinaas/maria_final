@@ -42,7 +42,7 @@
         </div>
       </div>
 
-      <div class="row g-2 align-items-end mb-3">
+<!--      <div class="row g-2 align-items-end mb-3">
         <div class="col-md-6">
           <label for="fecha_desde_fv" class="form-label mb-1">Desde</label>
           <input type="date" id="fecha_desde_fv" class="form-control">
@@ -51,7 +51,7 @@
           <label for="fecha_hasta_fv" class="form-label mb-1">Hasta</label>
           <input type="date" id="fecha_hasta_fv" class="form-control">
         </div>
-      </div>
+      </div>-->
 
       <!-- Tabla -->
       <div class="table-responsive">

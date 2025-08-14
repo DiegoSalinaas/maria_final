@@ -1,144 +1,291 @@
 <?php
-require_once '../conexion/db.php';
+// Ruta robusta a la conexión
+require_once __DIR__ . '/../conexion/db.php';
 
-if(isset($_POST['guardar'])){
-    guardar($_POST['guardar']);
+if (isset($_POST['guardar']))           guardar($_POST['guardar']);
+if (isset($_POST['leer']))              leer();
+if (isset($_POST['id']))                id($_POST['id']);
+if (isset($_POST['ultimo_registro']))   ultimo_registro();
+if (isset($_POST['actualizar']))        actualizar($_POST['actualizar']);
+if (isset($_POST['eliminar']))          eliminar($_POST['eliminar']);
+
+function getPDO(){
+    $db = new DB();
+    $pdo = $db->conectar();
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    return $pdo;
 }
-if(isset($_POST['leer'])){
-    leer();
-}
-if(isset($_POST['id'])){
-    id($_POST['id']);
-}
-if(isset($_POST['ultimo_registro'])){
-    ultimo_registro();
-}
-if(isset($_POST['actualizar'])){
-    actualizar($_POST['actualizar']);
-}
-if(isset($_POST['eliminar'])){
-    eliminar($_POST['eliminar']);
+
+/** Normaliza "1.234.567,89" | "1,234,567.89" | "1234567" -> float */
+function toFloat($v) {
+    if ($v === null) return 0.0;
+    $s = trim((string)$v);
+    if ($s === '') return 0.0;
+    $lastC = strrpos($s, ',');
+    $lastD = strrpos($s, '.');
+    $decPos = max((int)$lastC, (int)$lastD);
+    if ($decPos > 0) {
+        $int  = preg_replace('/[^\d]/', '', substr($s, 0, $decPos));
+        $frac = preg_replace('/[^\d]/', '', substr($s, $decPos + 1));
+        return floatval($int . '.' . $frac);
+    }
+    return floatval(preg_replace('/[^\d]/', '', $s));
 }
 
 function guardar($lista){
-    $datos = json_decode($lista,true);
-    $db = new DB();
-    $pdo = $db->conectar();
-    try{
-        $pdo->beginTransaction();
+    header('Content-Type: application/json; charset=utf-8');
+    $pdo = getPDO();
+
+    try {
+        $datos = json_decode($lista, true);
+        if (!is_array($datos))             throw new Exception("Payload inválido.");
+        if (empty($datos['cabecera']))     throw new Exception("Falta cabecera.");
+
         $cab = $datos['cabecera'];
-        $stmt = $pdo->prepare("INSERT INTO servicios(id_cliente,ci_cliente,telefono_cliente,fecha_servicio,estado,tecnico,observaciones,total,created_at) VALUES (?,?,?,?,?,?,?,?,NOW())");
-        $stmt->execute([
-            $cab['id_cliente'],
-            $cab['ci_cliente'],
-            $cab['telefono_cliente'],
-            $cab['fecha_servicio'],
-            $cab['estado'],
-            $cab['tecnico'],
-            $cab['observaciones'],
-            $cab['total']
+        $id_cliente        = (int)($cab['id_cliente'] ?? 0);
+        $ci_cliente        = trim($cab['ci_cliente'] ?? '');
+        $tel_cliente       = trim($cab['telefono_cliente'] ?? '');
+        $fecha_servicio    = trim($cab['fecha_servicio'] ?? '');
+        $estado            = trim($cab['estado'] ?? '');
+        $tecnico           = trim($cab['tecnico'] ?? '');
+        $observaciones     = trim($cab['observaciones'] ?? '');
+        $total             = toFloat($cab['total'] ?? 0);
+
+        if ($id_cliente <= 0)         throw new Exception("Cliente inválido.");
+        if ($fecha_servicio === '')   throw new Exception("Fecha servicio requerida.");
+        if ($estado === '')           throw new Exception("Estado requerido.");
+        if ($total <= 0)              throw new Exception("Total debe ser > 0.");
+
+        // FK cliente
+        $st = $pdo->prepare("SELECT 1 FROM cliente_1 WHERE cod_cliente=?");
+        $st->execute([$id_cliente]);
+        if (!$st->fetchColumn()) throw new Exception("El cliente ($id_cliente) no existe en cliente_1.");
+
+        $pdo->beginTransaction();
+
+        // CABECERA (created_at por DEFAULT en la tabla)
+        $sql = "INSERT INTO servicios
+                (id_cliente, ci_cliente, telefono_cliente, fecha_servicio, estado, tecnico, observaciones, total, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
+        $pdo->prepare($sql)->execute([
+            $id_cliente,
+            $ci_cliente !== '' ? $ci_cliente : null,
+            $tel_cliente !== '' ? $tel_cliente : null,
+            $fecha_servicio,
+            $estado,
+            $tecnico !== '' ? $tecnico : null,
+            $observaciones !== '' ? $observaciones : null,
+            number_format($total, 2, '.', '')
         ]);
-        $id = $pdo->lastInsertId();
-        if(!empty($datos['detalles'])){
-            $stmtDet = $pdo->prepare("INSERT INTO servicio_detalles(id_servicio,tipo_servicio,descripcion,producto_relacionado,cantidad,precio_unitario,subtotal,observaciones) VALUES (?,?,?,?,?,?,?,?)");
-            foreach($datos['detalles'] as $d){
-                $stmtDet->execute([$id,$d['tipo_servicio'],$d['descripcion'],$d['producto_relacionado'],$d['cantidad'],$d['precio_unitario'],$d['subtotal'],$d['observaciones']]);
+
+        $id = (int)$pdo->lastInsertId();
+
+        // DETALLES
+        if (!empty($datos['detalles']) && is_array($datos['detalles'])) {
+            $sqlD = "INSERT INTO servicio_detalles
+                    (id_servicio, tipo_servicio, descripcion, producto_relacionado, cantidad, precio_unitario, subtotal, observaciones)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $pd = $pdo->prepare($sqlD);
+
+            foreach ($datos['detalles'] as $d) {
+                $tipo  = trim($d['tipo_servicio'] ?? '');
+                $desc  = trim($d['descripcion'] ?? '');
+                $prod  = trim($d['producto_relacionado'] ?? '');
+                $cant  = (int)($d['cantidad'] ?? 0);
+                $prec  = toFloat($d['precio_unitario'] ?? 0);
+                $calc  = $cant * $prec;
+                $subt  = toFloat($d['subtotal'] ?? $calc);
+                $obs   = trim($d['observaciones'] ?? '');
+
+                if ($tipo === '' || $desc === '' || $cant <= 0 || $prec <= 0) {
+                    throw new Exception("Detalle inválido.");
+                }
+
+                $pd->execute([
+                    $id,
+                    $tipo,
+                    $desc,
+                    $prod !== '' ? $prod : null,
+                    $cant,
+                    number_format($prec, 2, '.', ''),
+                    number_format($subt, 2, '.', ''),
+                    $obs !== '' ? $obs : null
+                ]);
             }
         }
+
         $pdo->commit();
-        echo $id;
-    }catch(Exception $e){
-        $pdo->rollBack();
-        echo "0";
+        echo json_encode(['ok'=>true, 'id'=>$id]);
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        http_response_code(400);
+        echo json_encode(['ok'=>false, 'error'=>$e->getMessage()]);
     }
 }
 
 function leer(){
-    $db = new DB();
-    $query = $db->conectar()->prepare("SELECT s.id_servicio,s.fecha_servicio,c.nombre_cliente AS cliente,s.total,s.estado FROM servicios s JOIN cliente c ON c.cod_cliente=s.id_cliente");
-    $query->execute();
-    if($query->rowCount()){
-        echo json_encode($query->fetchAll(PDO::FETCH_OBJ));
-    }else{
-        echo '0';
+    header('Content-Type: application/json; charset=utf-8');
+    try {
+        $pdo = getPDO();
+        $sql = "SELECT s.id_servicio,
+                       s.fecha_servicio,
+                       c.nombre_cliente AS cliente,
+                       s.total,
+                       s.estado
+                FROM servicios s
+                JOIN cliente_1 c ON c.cod_cliente = s.id_cliente
+                ORDER BY s.id_servicio DESC";
+        $q = $pdo->prepare($sql);
+        $q->execute();
+        $rows = $q->fetchAll(PDO::FETCH_OBJ);
+        echo json_encode($rows ?: []);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['ok'=>false, 'error'=>$e->getMessage()]);
     }
 }
 
 function id($id){
-    $db = new DB();
-    $pdo = $db->conectar();
-    $cab = $pdo->prepare("SELECT * FROM servicios WHERE id_servicio=?");
-    $cab->execute([$id]);
-    if(!$cab->rowCount()){
-        echo '0';
-        return;
+    header('Content-Type: application/json; charset=utf-8');
+    try {
+        $pdo = getPDO();
+        $cab = $pdo->prepare("SELECT * FROM servicios WHERE id_servicio=?");
+        $cab->execute([$id]);
+        $cabecera = $cab->fetch(PDO::FETCH_ASSOC);
+        if (!$cabecera){ echo json_encode(['ok'=>false,'error'=>'No encontrado']); return; }
+
+        $det = $pdo->prepare("SELECT * FROM servicio_detalles WHERE id_servicio=?");
+        $det->execute([$id]);
+        echo json_encode([
+            'cabecera'=>$cabecera,
+            'detalles'=>$det->fetchAll(PDO::FETCH_ASSOC)
+        ]);
+    } catch (Throwable $e) {
+        http_response_code(400);
+        echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
     }
-    $cabecera = $cab->fetch(PDO::FETCH_ASSOC);
-    $det = $pdo->prepare("SELECT * FROM servicio_detalles WHERE id_servicio=?");
-    $det->execute([$id]);
-    echo json_encode([
-        'cabecera'=>$cabecera,
-        'detalles'=>$det->fetchAll(PDO::FETCH_ASSOC)
-    ]);
 }
 
 function ultimo_registro(){
-    $db = new DB();
-    $query = $db->conectar()->prepare("SELECT id_servicio FROM servicios ORDER BY id_servicio DESC LIMIT 1");
-    $query->execute();
-    if($query->rowCount()){
-        echo json_encode($query->fetch(PDO::FETCH_ASSOC));
-    }else{
-        echo '0';
+    header('Content-Type: application/json; charset=utf-8');
+    try {
+        $pdo = getPDO();
+        $q = $pdo->prepare("SELECT id_servicio FROM servicios ORDER BY id_servicio DESC LIMIT 1");
+        $q->execute();
+        $row = $q->fetch(PDO::FETCH_ASSOC);
+        echo $row ? json_encode($row) : '0';
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
     }
 }
 
 function actualizar($lista){
-    $datos = json_decode($lista,true);
-    $db = new DB();
-    $pdo = $db->conectar();
-    try{
-        $pdo->beginTransaction();
+    header('Content-Type: application/json; charset=utf-8');
+    $pdo = getPDO();
+
+    try {
+        $datos = json_decode($lista, true);
+        if (!is_array($datos))           throw new Exception("Payload inválido.");
+        if (empty($datos['cabecera']))   throw new Exception("Falta cabecera.");
+
         $cab = $datos['cabecera'];
-        $stmt = $pdo->prepare("UPDATE servicios SET id_cliente=?,ci_cliente=?,telefono_cliente=?,fecha_servicio=?,estado=?,tecnico=?,observaciones=?,total=? WHERE id_servicio=?");
-        $stmt->execute([
-            $cab['id_cliente'],
-            $cab['ci_cliente'],
-            $cab['telefono_cliente'],
-            $cab['fecha_servicio'],
-            $cab['estado'],
-            $cab['tecnico'],
-            $cab['observaciones'],
-            $cab['total'],
-            $cab['id_servicio']
+        $id_servicio       = (int)($cab['id_servicio'] ?? 0);
+        if ($id_servicio <= 0) throw new Exception("ID inválido.");
+
+        $id_cliente        = (int)($cab['id_cliente'] ?? 0);
+        $ci_cliente        = trim($cab['ci_cliente'] ?? '');
+        $tel_cliente       = trim($cab['telefono_cliente'] ?? '');
+        $fecha_servicio    = trim($cab['fecha_servicio'] ?? '');
+        $estado            = trim($cab['estado'] ?? '');
+        $tecnico           = trim($cab['tecnico'] ?? '');
+        $observaciones     = trim($cab['observaciones'] ?? '');
+        $total             = toFloat($cab['total'] ?? 0);
+
+        if ($id_cliente <= 0)         throw new Exception("Cliente inválido.");
+        if ($fecha_servicio === '')   throw new Exception("Fecha servicio requerida.");
+        if ($estado === '')           throw new Exception("Estado requerido.");
+        if ($total <= 0)              throw new Exception("Total debe ser > 0.");
+
+        // FK cliente
+        $st = $pdo->prepare("SELECT 1 FROM cliente_1 WHERE cod_cliente=?");
+        $st->execute([$id_cliente]);
+        if (!$st->fetchColumn()) throw new Exception("El cliente ($id_cliente) no existe en cliente_1.");
+
+        $pdo->beginTransaction();
+
+        $sql = "UPDATE servicios
+                SET id_cliente=?, ci_cliente=?, telefono_cliente=?, fecha_servicio=?, estado=?, tecnico=?, observaciones=?, total=?
+                WHERE id_servicio=?";
+        $pdo->prepare($sql)->execute([
+            $id_cliente,
+            $ci_cliente !== '' ? $ci_cliente : null,
+            $tel_cliente !== '' ? $tel_cliente : null,
+            $fecha_servicio,
+            $estado,
+            $tecnico !== '' ? $tecnico : null,
+            $observaciones !== '' ? $observaciones : null,
+            number_format($total, 2, '.', ''),
+            $id_servicio
         ]);
-        $pdo->prepare("DELETE FROM servicio_detalles WHERE id_servicio=?")->execute([$cab['id_servicio']]);
-        if(!empty($datos['detalles'])){
-            $stmtDet = $pdo->prepare("INSERT INTO servicio_detalles(id_servicio,tipo_servicio,descripcion,producto_relacionado,cantidad,precio_unitario,subtotal,observaciones) VALUES (?,?,?,?,?,?,?,?)");
-            foreach($datos['detalles'] as $d){
-                $stmtDet->execute([$cab['id_servicio'],$d['tipo_servicio'],$d['descripcion'],$d['producto_relacionado'],$d['cantidad'],$d['precio_unitario'],$d['subtotal'],$d['observaciones']]);
+
+        // Reemplazar detalles
+        $pdo->prepare("DELETE FROM servicio_detalles WHERE id_servicio=?")->execute([$id_servicio]);
+
+        if (!empty($datos['detalles']) && is_array($datos['detalles'])) {
+            $sqlD = "INSERT INTO servicio_detalles
+                    (id_servicio, tipo_servicio, descripcion, producto_relacionado, cantidad, precio_unitario, subtotal, observaciones)
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $pd = $pdo->prepare($sqlD);
+
+            foreach ($datos['detalles'] as $d) {
+                $tipo  = trim($d['tipo_servicio'] ?? '');
+                $desc  = trim($d['descripcion'] ?? '');
+                $prod  = trim($d['producto_relacionado'] ?? '');
+                $cant  = (int)($d['cantidad'] ?? 0);
+                $prec  = toFloat($d['precio_unitario'] ?? 0);
+                $calc  = $cant * $prec;
+                $subt  = toFloat($d['subtotal'] ?? $calc);
+                $obs   = trim($d['observaciones'] ?? '');
+
+                if ($tipo === '' || $desc === '' || $cant <= 0 || $prec <= 0) {
+                    throw new Exception("Detalle inválido.");
+                }
+
+                $pd->execute([
+                    $id_servicio,
+                    $tipo,
+                    $desc,
+                    $prod !== '' ? $prod : null,
+                    $cant,
+                    number_format($prec, 2, '.', ''),
+                    number_format($subt, 2, '.', ''),
+                    $obs !== '' ? $obs : null
+                ]);
             }
         }
+
         $pdo->commit();
-        echo $cab['id_servicio'];
-    }catch(Exception $e){
-        $pdo->rollBack();
-        echo "0";
+        echo json_encode(['ok'=>true, 'id'=>$id_servicio]);
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        http_response_code(400);
+        echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
     }
 }
 
 function eliminar($id){
-    $db = new DB();
-    $pdo = $db->conectar();
-    try{
+    header('Content-Type: application/json; charset=utf-8');
+    $pdo = getPDO();
+    try {
         $pdo->beginTransaction();
         $pdo->prepare("DELETE FROM servicio_detalles WHERE id_servicio=?")->execute([$id]);
         $pdo->prepare("DELETE FROM servicios WHERE id_servicio=?")->execute([$id]);
         $pdo->commit();
-        echo '1';
-    }catch(Exception $e){
-        $pdo->rollBack();
-        echo '0';
+        echo json_encode(['ok'=>true]);
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        http_response_code(400);
+        echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
     }
 }
-?>
