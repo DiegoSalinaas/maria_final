@@ -63,6 +63,7 @@ function leer(){
   $db = new DB(); $cn = $db->conectar();
   $desde = $_POST['desde'] ?? null;
   $hasta = $_POST['hasta'] ?? null;
+  $estado = $_POST['estado'] ?? '';
 
   $where = "";
   $params = [];
@@ -76,6 +77,11 @@ function leer(){
   } elseif ($hasta) {
     $where = "WHERE oc.oc_fecha_emision <= :hasta";
     $params[':hasta'] = $hasta;
+  }
+
+  if ($estado !== '') {
+    $where .= $where ? " AND oc.oc_estado = :estado" : "WHERE oc.oc_estado = :estado";
+    $params[':estado'] = $estado;
   }
 
   $sql = "
@@ -105,10 +111,11 @@ function leer(){
 
 
 /* ===== Búsqueda ===== */
-function leer_buscar($busqueda){
-  $db = new DB(); $cn = $db->conectar();
-  $desde = $_POST['desde'] ?? null;
-  $hasta = $_POST['hasta'] ?? null;
+  function leer_buscar($busqueda){
+    $db = new DB(); $cn = $db->conectar();
+    $desde = $_POST['desde'] ?? null;
+    $hasta = $_POST['hasta'] ?? null;
+    $estado = $_POST['estado'] ?? '';
 
   $where = "WHERE CONCAT(
       oc.cod_orden,' ',oc.oc_fecha_emision,' ',oc.oc_estado,' ',
@@ -126,6 +133,11 @@ function leer_buscar($busqueda){
     $where .= " AND oc.oc_fecha_emision <= :hasta";
     $params[':hasta'] = $hasta;
   }
+
+    if ($estado !== '') {
+      $where .= " AND oc.oc_estado = :estado";
+      $params[':estado'] = $estado;
+    }
 
   $sql = "
     SELECT
@@ -264,6 +276,7 @@ function guardar_detalles($raw){
     $colCodItem = $usaProducto ? 'cod_producto' : 'cod_insumos';
 
     // Validación básica + normalización (acepta que el cliente mande cualquiera de los 2 nombres)
+    $visto = [];
     foreach ($items as $i => &$d) {
       $d = is_array($d) ? $d : [];
       $d['cod_orden'] = (int)($d['cod_orden'] ?? 0);
@@ -281,6 +294,12 @@ function guardar_detalles($raw){
       if ($d[$colCodItem] <= 0)      throw new Exception("Ítem #$i: $colCodItem inválido");
       if ($d['cantidad']  <= 0)      throw new Exception("Ítem #$i: cantidad debe ser > 0");
       if ($d['costo']     <= 0)      throw new Exception("Ítem #$i: costo debe ser > 0");
+
+      $key = $d['cod_orden'] . '-' . $d[$colCodItem];
+      if (isset($visto[$key])) {
+        throw new Exception("Ítem repetido para $colCodItem " . $d[$colCodItem]);
+      }
+      $visto[$key] = true;
     }
     unset($d); // rompe referencia
 
