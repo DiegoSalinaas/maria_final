@@ -48,6 +48,7 @@ window.mostrarListarFacturas = mostrarListarFacturas;
 function wireListEvents(){
   $("#b_factura").off("input").on("input", debounce(cargarTablaFacturas, 250));
   $("#estado_lst").off("change").on("change", cargarTablaFacturas);
+  $("#desde_txt, #hasta_txt").off("change").on("change", cargarTablaFacturas);
   $("#btn_buscar").off("click").on("click", function(e){ e.preventDefault(); cargarTablaFacturas(); });
 }
 
@@ -453,8 +454,10 @@ function guardarFacturaCompleta(){
 function cargarTablaFacturas(){
   const buscar = $("#b_factura").val()||'';
   const estado = $("#estado_lst").val()||'';
+  const desde = $("#desde_txt").val()||'';
+  const hasta = $("#hasta_txt").val()||'';
   const js = ejecutarAjaxJSON("controladores/factura.php",
-    `leer=1&buscar=${encodeURIComponent(buscar)}&estado=${encodeURIComponent(estado)}`);
+    `leer=1&buscar=${encodeURIComponent(buscar)}&estado=${encodeURIComponent(estado)}&desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`);
   const $tb = $("#tabla_facturas");
   $tb.html('');
 

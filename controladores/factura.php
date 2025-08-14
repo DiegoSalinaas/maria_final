@@ -192,6 +192,22 @@ if (isset($_REQUEST['leer'])) {
     $params[':estado'] = $_REQUEST['estado'];
   }
 
+  // Filtro por rango de fechas (opcional)
+  if (isset($_REQUEST['desde']) && $_REQUEST['desde'] !== '') {
+    $dt = DateTime::createFromFormat('Y-m-d', $_REQUEST['desde']);
+    if ($dt) {
+      $where .= " AND f.fecha_emision >= :desde";
+      $params[':desde'] = $dt->format('Y-m-d');
+    }
+  }
+  if (isset($_REQUEST['hasta']) && $_REQUEST['hasta'] !== '') {
+    $dt = DateTime::createFromFormat('Y-m-d', $_REQUEST['hasta']);
+    if ($dt) {
+      $where .= " AND f.fecha_emision <= :hasta";
+      $params[':hasta'] = $dt->format('Y-m-d');
+    }
+  }
+
   // Búsqueda (nombre cliente, nro, nro completo)
   if (isset($_REQUEST['buscar']) && $_REQUEST['buscar'] !== '') {
     $b = '%'.$_REQUEST['buscar'].'%';
