@@ -27,12 +27,11 @@ function guardar($lista){
     try{
         $pdo->beginTransaction();
         $cab = $datos['cabecera'];
-        $stmt = $pdo->prepare("INSERT INTO servicios(id_cliente,ci_cliente,telefono_cliente,email_cliente,fecha_servicio,estado,tecnico,observaciones,total,created_at) VALUES (?,?,?,?,?,?,?,?,?,NOW())");
+        $stmt = $pdo->prepare("INSERT INTO servicios(id_cliente,ci_cliente,telefono_cliente,fecha_servicio,estado,tecnico,observaciones,total,created_at) VALUES (?,?,?,?,?,?,?,?,NOW())");
         $stmt->execute([
             $cab['id_cliente'],
             $cab['ci_cliente'],
             $cab['telefono_cliente'],
-            $cab['email_cliente'],
             $cab['fecha_servicio'],
             $cab['estado'],
             $cab['tecnico'],
@@ -101,12 +100,11 @@ function actualizar($lista){
     try{
         $pdo->beginTransaction();
         $cab = $datos['cabecera'];
-        $stmt = $pdo->prepare("UPDATE servicios SET id_cliente=?,ci_cliente=?,telefono_cliente=?,email_cliente=?,fecha_servicio=?,estado=?,tecnico=?,observaciones=?,total=? WHERE id_servicio=?");
+        $stmt = $pdo->prepare("UPDATE servicios SET id_cliente=?,ci_cliente=?,telefono_cliente=?,fecha_servicio=?,estado=?,tecnico=?,observaciones=?,total=? WHERE id_servicio=?");
         $stmt->execute([
             $cab['id_cliente'],
             $cab['ci_cliente'],
             $cab['telefono_cliente'],
-            $cab['email_cliente'],
             $cab['fecha_servicio'],
             $cab['estado'],
             $cab['tecnico'],
