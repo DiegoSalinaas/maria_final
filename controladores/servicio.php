@@ -27,10 +27,12 @@ function guardar($lista){
     try{
         $pdo->beginTransaction();
         $cab = $datos['cabecera'];
-        $stmt = $pdo->prepare("INSERT INTO servicios(id_cliente,id_equipo,fecha_servicio,estado,tecnico,observaciones,total,created_at) VALUES (?,?,?,?,?,?,?,NOW())");
+        $stmt = $pdo->prepare("INSERT INTO servicios(id_cliente,ci_cliente,telefono_cliente,email_cliente,fecha_servicio,estado,tecnico,observaciones,total,created_at) VALUES (?,?,?,?,?,?,?,?,?,NOW())");
         $stmt->execute([
             $cab['id_cliente'],
-            $cab['id_equipo'],
+            $cab['ci_cliente'],
+            $cab['telefono_cliente'],
+            $cab['email_cliente'],
             $cab['fecha_servicio'],
             $cab['estado'],
             $cab['tecnico'],
@@ -39,9 +41,9 @@ function guardar($lista){
         ]);
         $id = $pdo->lastInsertId();
         if(!empty($datos['detalles'])){
-            $stmtDet = $pdo->prepare("INSERT INTO servicio_detalles(id_servicio,descripcion,costo,estado,fecha_realizada) VALUES (?,?,?,?,?)");
+            $stmtDet = $pdo->prepare("INSERT INTO servicio_detalles(id_servicio,tipo_servicio,descripcion,producto_relacionado,cantidad,precio_unitario,subtotal,observaciones) VALUES (?,?,?,?,?,?,?,?)");
             foreach($datos['detalles'] as $d){
-                $stmtDet->execute([$id,$d['descripcion'],$d['costo'],$d['estado'],$d['fecha_realizada']]);
+                $stmtDet->execute([$id,$d['tipo_servicio'],$d['descripcion'],$d['producto_relacionado'],$d['cantidad'],$d['precio_unitario'],$d['subtotal'],$d['observaciones']]);
             }
         }
         $pdo->commit();
@@ -54,7 +56,7 @@ function guardar($lista){
 
 function leer(){
     $db = new DB();
-    $query = $db->conectar()->prepare("SELECT s.id_servicio,s.fecha_servicio,c.nombre_cliente AS cliente,s.total,s.estado,e.cod_equipo AS equipo FROM servicios s JOIN cliente c ON c.cod_cliente=s.id_cliente JOIN equipo e ON e.cod_equipo=s.id_equipo");
+    $query = $db->conectar()->prepare("SELECT s.id_servicio,s.fecha_servicio,c.nombre_cliente AS cliente,s.total,s.estado FROM servicios s JOIN cliente c ON c.cod_cliente=s.id_cliente");
     $query->execute();
     if($query->rowCount()){
         echo json_encode($query->fetchAll(PDO::FETCH_OBJ));
@@ -99,10 +101,12 @@ function actualizar($lista){
     try{
         $pdo->beginTransaction();
         $cab = $datos['cabecera'];
-        $stmt = $pdo->prepare("UPDATE servicios SET id_cliente=?,id_equipo=?,fecha_servicio=?,estado=?,tecnico=?,observaciones=?,total=? WHERE id_servicio=?");
+        $stmt = $pdo->prepare("UPDATE servicios SET id_cliente=?,ci_cliente=?,telefono_cliente=?,email_cliente=?,fecha_servicio=?,estado=?,tecnico=?,observaciones=?,total=? WHERE id_servicio=?");
         $stmt->execute([
             $cab['id_cliente'],
-            $cab['id_equipo'],
+            $cab['ci_cliente'],
+            $cab['telefono_cliente'],
+            $cab['email_cliente'],
             $cab['fecha_servicio'],
             $cab['estado'],
             $cab['tecnico'],
@@ -112,9 +116,9 @@ function actualizar($lista){
         ]);
         $pdo->prepare("DELETE FROM servicio_detalles WHERE id_servicio=?")->execute([$cab['id_servicio']]);
         if(!empty($datos['detalles'])){
-            $stmtDet = $pdo->prepare("INSERT INTO servicio_detalles(id_servicio,descripcion,costo,estado,fecha_realizada) VALUES (?,?,?,?,?)");
+            $stmtDet = $pdo->prepare("INSERT INTO servicio_detalles(id_servicio,tipo_servicio,descripcion,producto_relacionado,cantidad,precio_unitario,subtotal,observaciones) VALUES (?,?,?,?,?,?,?,?)");
             foreach($datos['detalles'] as $d){
-                $stmtDet->execute([$cab['id_servicio'],$d['descripcion'],$d['costo'],$d['estado'],$d['fecha_realizada']]);
+                $stmtDet->execute([$cab['id_servicio'],$d['tipo_servicio'],$d['descripcion'],$d['producto_relacionado'],$d['cantidad'],$d['precio_unitario'],$d['subtotal'],$d['observaciones']]);
             }
         }
         $pdo->commit();

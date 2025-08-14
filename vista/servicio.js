@@ -14,7 +14,6 @@ function cargarTablaServicio(){
                 <td>${item.id_servicio}</td>
                 <td>${item.fecha_servicio}</td>
                 <td>${item.cliente}</td>
-                <td>${item.equipo}</td>
                 <td>${item.total}</td>
                 <td>${item.estado}</td>
                 <td>
@@ -31,7 +30,6 @@ function mostrarAgregarServicio(){
     const contenido = dameContenido("paginas/movimientos/servicio/servicios/agregar.php");
     $(".contenido-principal").html(contenido);
     cargarListaCliente("#cliente_lst");
-    cargarListaEquipo("#equipo_lst");
     const ultimo = ejecutarAjax("controladores/servicio.php","ultimo_registro=1");
     if(ultimo === "0"){
         $("#id_servicio").val("1");
@@ -40,23 +38,36 @@ function mostrarAgregarServicio(){
         $("#id_servicio").val(quitarDecimalesConvertir(json.id_servicio)+1);
     }
     dameFechaActual("fecha_servicio");
+    $(document).off('change','#cliente_lst').on('change','#cliente_lst',function(){
+        const id = $(this).val();
+        if(id==="0"){ $("#ci_cliente,#telefono_cliente,#email_cliente").val(""); return; }
+        const datos = ejecutarAjax("controladores/cliente.php","id="+id);
+        if(datos!=="0"){ const c = JSON.parse(datos); $("#ci_cliente").val(c.ci_cliente||""); $("#telefono_cliente").val(c.telefono||""); $("#email_cliente").val(c.email_cliente||""); }
+    });
 }
 
 function agregarDetalle(){
-    const desc = $("#desc_detalle").val().trim();
-    const costo = quitarDecimalesConvertir($("#costo_detalle").val());
-    const estado = $("#estado_detalle").val();
-    const fecha = $("#fecha_detalle").val();
-    if(desc.length===0 || costo<=0){return;}
+    const tipo = $("#tipo_servicio").val().trim();
+    const desc = $("#desc_servicio").val().trim();
+    const prod = $("#producto_rel").val().trim();
+    const cant = quitarDecimalesConvertir($("#cant_servicio").val());
+    const precio = quitarDecimalesConvertir($("#precio_servicio").val());
+    const obs = $("#obs_detalle").val().trim();
+    if(tipo.length===0 || desc.length===0 || cant<=0 || precio<=0){return;}
+    const subtotal = cant*precio;
     $("#detalle_servicio").append(`
         <tr>
+            <td>${tipo}</td>
             <td>${desc}</td>
-            <td>${costo}</td>
-            <td>${estado}</td>
-            <td>${fecha}</td>
+            <td>${prod}</td>
+            <td>${cant}</td>
+            <td>${precio}</td>
+            <td>${subtotal}</td>
+            <td>${obs}</td>
             <td><button class='btn btn-danger btn-sm quitar-detalle'>Quitar</button></td>
         </tr>`);
-    $("#desc_detalle,#costo_detalle,#fecha_detalle").val("");
+    $("#tipo_servicio,#desc_servicio,#producto_rel,#cant_servicio,#precio_servicio,#obs_detalle").val("");
+    $("#cant_servicio").val(1);
 }
 
 $(document).on("click",".quitar-detalle",function(){
@@ -64,13 +75,15 @@ $(document).on("click",".quitar-detalle",function(){
 });
 
 function guardarServicio(){
-    if($("#cliente_lst").val()==="0" || $("#equipo_lst").val()==="0"){
-        mensaje_dialogo_info_ERROR("Debes seleccionar cliente y equipo","ATENCION");
+    if($("#cliente_lst").val()==="0"){
+        mensaje_dialogo_info_ERROR("Debes seleccionar un cliente","ATENCION");
         return;
     }
     let cab = {
         id_cliente: $("#cliente_lst").val(),
-        id_equipo: $("#equipo_lst").val(),
+        ci_cliente: $("#ci_cliente").val(),
+        telefono_cliente: $("#telefono_cliente").val(),
+        email_cliente: $("#email_cliente").val(),
         fecha_servicio: $("#fecha_servicio").val(),
         estado: $("#estado_servicio").val(),
         tecnico: $("#tecnico").val(),
@@ -81,12 +94,15 @@ function guardarServicio(){
     $("#detalle_servicio tr").each(function(){
         let tds = $(this).find("td");
         detalles.push({
-            descripcion: tds.eq(0).text(),
-            costo: tds.eq(1).text(),
-            estado: tds.eq(2).text(),
-            fecha_realizada: tds.eq(3).text()
+            tipo_servicio: tds.eq(0).text(),
+            descripcion: tds.eq(1).text(),
+            producto_relacionado: tds.eq(2).text(),
+            cantidad: tds.eq(3).text(),
+            precio_unitario: tds.eq(4).text(),
+            subtotal: tds.eq(5).text(),
+            observaciones: tds.eq(6).text()
         });
-        cab.total += quitarDecimalesConvertir(tds.eq(1).text());
+        cab.total += quitarDecimalesConvertir(tds.eq(5).text());
     });
     let payload = {cabecera:cab,detalles:detalles};
     let resp = "";
@@ -109,7 +125,6 @@ function editarServicio(id){
     $(".contenido-principal").html(contenido);
     $("#editar").val("SI");
     cargarListaCliente("#cliente_lst");
-    cargarListaEquipo("#equipo_lst");
     const datos = ejecutarAjax("controladores/servicio.php","id="+id);
     if(datos === "0") return;
     const json = JSON.parse(datos);
@@ -118,13 +133,15 @@ function editarServicio(id){
     $("#fecha_servicio").val(cab.fecha_servicio);
     setTimeout(()=>{
         $("#cliente_lst").val(cab.id_cliente);
-        $("#equipo_lst").val(cab.id_equipo);
     },300);
+    $("#ci_cliente").val(cab.ci_cliente);
+    $("#telefono_cliente").val(cab.telefono_cliente);
+    $("#email_cliente").val(cab.email_cliente);
     $("#estado_servicio").val(cab.estado);
     $("#tecnico").val(cab.tecnico);
     $("#observaciones").val(cab.observaciones);
     json.detalles.forEach(d=>{
-        $("#detalle_servicio").append(`<tr><td>${d.descripcion}</td><td>${d.costo}</td><td>${d.estado}</td><td>${d.fecha_realizada}</td><td><button class='btn btn-danger btn-sm quitar-detalle'>Quitar</button></td></tr>`);
+        $("#detalle_servicio").append(`<tr><td>${d.tipo_servicio}</td><td>${d.descripcion}</td><td>${d.producto_relacionado}</td><td>${d.cantidad}</td><td>${d.precio_unitario}</td><td>${d.subtotal}</td><td>${d.observaciones}</td><td><button class='btn btn-danger btn-sm quitar-detalle'>Quitar</button></td></tr>`);
     });
 }
 
@@ -142,16 +159,4 @@ function eliminarServicio(id){
             if(r !== "0"){cargarTablaServicio();}
         }
     });
-}
-
-function cargarListaEquipo(componente){
-    const datos = ejecutarAjax("controladores/equipo.php","leer=1");
-    let option = "<option value='0'>Selecciona un equipo</option>";
-    if(datos !== "0"){
-        const json = JSON.parse(datos);
-        json.forEach(item=>{
-            option += `<option value='${item.cod_equipo}'>${item.cod_equipo}</option>`;
-        });
-    }
-    $(componente).html(option);
 }
