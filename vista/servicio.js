@@ -102,40 +102,19 @@ function mostrarAgregarServicio(){
   });
 }
 
-
-// ===== Detalle =====
 function agregarDetalle() {
     const tipo    = ($("#tipo_servicio").val() || "").trim();
     const desc    = ($("#desc_servicio").val() || "").trim();
     const prodTxt = ($("#producto_rel_txt").val() || "").trim();
 
-    // Limpiar cantidad: quitar cualquier caracter que no sea dígito o punto/coma
-    let cantVal = ($("#cant_servicio").val() || "")
-        .replace(/\u00A0/g, "")     // elimina espacios duros
-        .replace(/[^\d,.\-]/g, "")  // elimina letras y símbolos
-        .replace(",", ".")          // coma a punto
-        .trim();
-    const cant = parseFloat(cantVal);
-
-    let precioVal = ($("#precio_servicio").val() || "")
-        .replace(/\u00A0/g, "")
-        .replace(/[^\d,.\-]/g, "")
-        .replace(",", ".")
-        .trim();
-    const precio = parseFloat(precioVal);
-
-    const obs = ($("#obs_detalle").val() || "").trim();
+    const cant    = parseFloat($("#cant_servicio").val());
+    const precio  = parseFloat($("#precio_servicio").val());
+    const obs     = ($("#obs_detalle").val() || "").trim();
 
     if (!prodTxt) { alert("Debes escribir el producto."); $("#producto_rel_txt").focus(); return; }
     if (!tipo)    { alert("Debes seleccionar el tipo."); $("#tipo_servicio").focus(); return; }
     if (!desc)    { alert("Debes escribir la descripción."); $("#desc_servicio").focus(); return; }
-    if (isNaN(cant) || cant <= 0) {
-        console.log("Valor crudo de cantidad:", $("#cant_servicio").val());
-        console.log("Cantidad procesada:", cantVal);
-        alert("Cantidad inválida.");
-        $("#cant_servicio").focus();
-        return;
-    }
+    if (isNaN(cant) || cant <= 0) { alert("Cantidad inválida."); $("#cant_servicio").focus(); return; }
     if (isNaN(precio) || precio <= 0) { alert("Precio inválido."); $("#precio_servicio").focus(); return; }
 
     const subtotal = cant * precio;
@@ -146,17 +125,17 @@ function agregarDetalle() {
             <td>${desc}</td>
             <td>${prodTxt}</td>
             <td class="text-end">${cant}</td>
-            <td class="text-end">${precio}</td>
+            <td class="text-end">${precio.toFixed(2)}</td>
             <td class="text-end">${subtotal.toFixed(2)}</td>
             <td>${obs}</td>
             <td><button type="button" class='btn btn-danger btn-sm quitar-detalle'>Quitar</button></td>
         </tr>
     `);
 
+    // Limpiar campos
     $("#tipo_servicio, #desc_servicio, #producto_rel_txt, #precio_servicio, #obs_detalle").val("");
     $("#cant_servicio").val(1);
 }
-
 
 // Eliminar fila
 $(document).on("click", ".quitar-detalle", function() {

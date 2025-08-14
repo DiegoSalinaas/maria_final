@@ -7,7 +7,7 @@ if (isset($_POST['leer']))              leer();
 if (isset($_POST['id']))                id($_POST['id']);
 if (isset($_POST['ultimo_registro']))   ultimo_registro();
 if (isset($_POST['actualizar']))        actualizar($_POST['actualizar']);
-if (isset($_POST['anular']))           anular($_POST['anular']);
+if (isset($_POST['anular']))            anular($_POST['anular']);
 if (isset($_POST['eliminar']))          eliminar($_POST['eliminar']);
 
 function getPDO(){
@@ -92,7 +92,7 @@ function guardar($lista){
                 $tipo  = trim($d['tipo_servicio'] ?? '');
                 $desc  = trim($d['descripcion'] ?? '');
                 $prod  = trim($d['producto_relacionado'] ?? '');
-                $cant  = (int)($d['cantidad'] ?? 0);
+                $cant  = toFloat($d['cantidad'] ?? 0);  // <-- CORREGIDO
                 $prec  = toFloat($d['precio_unitario'] ?? 0);
                 $calc  = $cant * $prec;
                 $subt  = toFloat($d['subtotal'] ?? $calc);
@@ -258,7 +258,7 @@ function actualizar($lista){
                 $tipo  = trim($d['tipo_servicio'] ?? '');
                 $desc  = trim($d['descripcion'] ?? '');
                 $prod  = trim($d['producto_relacionado'] ?? '');
-                $cant  = (int)($d['cantidad'] ?? 0);
+                $cant  = toFloat($d['cantidad'] ?? 0); // <-- CORREGIDO
                 $prec  = toFloat($d['precio_unitario'] ?? 0);
                 $calc  = $cant * $prec;
                 $subt  = toFloat($d['subtotal'] ?? $calc);
