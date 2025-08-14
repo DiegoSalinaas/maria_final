@@ -14,7 +14,6 @@
                     <th>#</th>
                     <th>Fecha</th>
                     <th>Cliente</th>
-                    <th>Equipo</th>
                     <th>Total</th>
                     <th>Estado</th>
                     <th>Operaciones</th>
