@@ -26,7 +26,8 @@ function cargarTablaServicio(){
           <td>${item.fecha_servicio}</td>
           <td class="text-start">${item.cliente || "-"}</td>
           <td class="text-end">${fmt0(item.total)}</td>
-          <td>${badgeEstadoSafe(item.estado)}</td>
+          <td>${item.estado ?? ''}</td>
+
           <td>
             <button class='btn btn-sm btn-primary' onclick='editarServicio(${item.id_servicio}); return false;'>Editar</button>
             <button class='btn btn-sm btn-danger' onclick='eliminarServicio(${item.id_servicio}); return false;'>Eliminar</button>

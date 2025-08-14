@@ -58,12 +58,12 @@
             </tr>
           </thead>
           <tbody id="servicio_tb">
-            <!-- filas dinámicas -->
+            <!-- filas dinámicas sin badges -->
           </tbody>
         </table>
       </div>
 
-      <!-- Empty state opcional -->
+      <!-- Empty state -->
       <div id="servicio_empty_state" class="text-center text-muted py-4 d-none">
         <i class="typcn typcn-info-large-outline d-block mb-2" style="font-size:28px;"></i>
         No se encontraron servicios con los filtros actuales.

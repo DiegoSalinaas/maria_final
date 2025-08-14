@@ -267,7 +267,7 @@ function limpiarDetalleUI(){
 
 function agregarDetalle(){
   const cod = parseInt($("#id_producto_lst").val()||0,10);
-  if(!cod){ alert('Seleccione un producto'); return; }
+//  if(!cod){ alert('Seleccione un producto'); return; }
 
   // Bloqueo de repetidos
   if (existeProductoEnDetalle(cod)){

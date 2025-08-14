@@ -87,7 +87,7 @@
     </div>
 
     <div class="col-md-12" style="margin-top:10px;">
-      <button type="button" class="btn btn-primary" onclick="agregarDetalle(); return false;">
+      <button type="button" class="btn btn-primary" onclick="agregarDetalleS(); return false;">
         Agregar
       </button>
     </div>
@@ -126,4 +126,4 @@
       </button>
     </div>
   </div>
-</div>
+</div> 
