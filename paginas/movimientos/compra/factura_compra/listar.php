@@ -24,7 +24,7 @@
           <div class="input-group">
             <span class="input-group-text"><i class="typcn typcn-zoom"></i></span>
             <input type="text" class="form-control" id="b_cliente2" placeholder="Buscar por proveedor, número o fecha…">
-            <button class="btn btn-outline-secondary" id="btn_limpiar_fc" type="button" onclick="document.getElementById('b_cliente2').value='';">
+            <button class="btn btn-outline-secondary" id="btn_limpiar_fc" type="button">
               <i class="typcn typcn-delete-outline"></i>
             </button>
           </div>
@@ -35,8 +35,7 @@
           <label class="form-label mb-1" for="estado_lst_fc">Estado</label>
           <select id="estado_lst_fc" class="form-control">
             <option value="">Todos</option>
-            <option value="PENDIENTE">Pendiente</option>
-            <option value="PAGADO">Pagado</option>
+            <option value="ACTIVO">Activo</option>
             <option value="ANULADO">Anulado</option>
           </select>
           <small class="text-muted">Filtro opcional por estado</small>
