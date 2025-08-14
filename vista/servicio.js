@@ -58,7 +58,7 @@ function resetProductoSelect() {
   $sel
     .prop("disabled", false)
     .prop("selectedIndex", 0)
-    .val("")
+    .val("0")
     .css("color", "#6c757d")
     .trigger("change");
   $sel.trigger("change.select2"); // si usás Select2/Chosen, no rompe en nativo
