@@ -1,20 +1,4 @@
 
-//const fmt0 = (n) => new Intl.NumberFormat("es-PY",{maximumFractionDigits:0}).format(Math.round(n||0));
-//
-//const qdc = (window.quitarDecimalesConvertir) ? window.quitarDecimalesConvertir : function(valor){
-//  if (valor == null) return 0;
-//  let s = String(valor).trim();
-//  if (!s) return 0;
-//  const lastC = Math.max(s.lastIndexOf(","), s.lastIndexOf("."));
-//  if (lastC > -1){
-//    const intPart  = s.slice(0,lastC).replace(/[.,\s]/g,"");
-//    const fracPart = s.slice(lastC+1).replace(/[^\d]/g,"");
-//    return Number(intPart + "." + fracPart) || 0;
-//  }
-//  return Number(s.replace(/[.,\s]/g,"")) || 0;
-//};
-
-
 function mostrarListarServicio(){
   const contenido = dameContenido("paginas/movimientos/servicio/servicios/listar.php");
   $(".contenido-principal").html(contenido);
@@ -70,10 +54,11 @@ function mostrarAgregarServicio(){
   $(".contenido-principal").html(contenido);
 
   $("#editar").val("NO");
+
   cargarListaCliente("#cliente_lst");
   cargarListaProducto("#producto_rel");
 
-  // último id (acepta '0' o JSON)
+  // último id
   $.post("controladores/servicio.php", { ultimo_registro: 1 })
     .done(function(resp){
       let idUlt = 1;
@@ -87,7 +72,10 @@ function mostrarAgregarServicio(){
   const hoy = new Date().toISOString().slice(0,10);
   $("#fecha_servicio").val(hoy);
 
-  // al cambiar cliente, cargar CI y teléfono
+  // asegurar select producto habilitado y sincronizado (evita “transparente”)
+  $("#producto_rel").prop("disabled", false).val("").trigger("change");
+
+  // cambiar cliente -> carga CI / teléfono
   $(document).off('change','#cliente_lst').on('change','#cliente_lst',function(){
     const id = $(this).val();
     if(id==="0"){ $("#ci_cliente,#telefono_cliente").val(""); return; }
@@ -104,11 +92,12 @@ function mostrarAgregarServicio(){
   });
 }
 
+// Añadir detalle (con producto requerido y reset correcto)
 function agregarDetalle(){
   const tipo    = $("#tipo_servicio").val().trim();
   const desc    = $("#desc_servicio").val().trim();
 
-  // valor y texto del select de producto (soporta "", "0" o numérico)
+  // valor/texto del select de producto
   const prodVal = (($("#producto_rel").val() ?? "") + "").trim();
   const prodTxt = $("#producto_rel option:selected").text().trim();
 
@@ -116,7 +105,7 @@ function agregarDetalle(){
   const precio  = qdc($("#precio_servicio").val());
   const obs     = $("#obs_detalle").val().trim();
 
-  // ✅ validación clara (producto requerido)
+  // Validaciones
   if (!prodVal || prodVal === "0") {
     mensaje_dialogo_info_ERROR("Debes seleccionar un producto.", "ATENCIÓN");
     $("#producto_rel").focus();
@@ -142,15 +131,11 @@ function agregarDetalle(){
     </tr>
   `);
 
-  // 🔄 reset limpio (compatibles con select “normal”, Select2 o Chosen)
+  // reset limpio
   $("#tipo_servicio, #desc_servicio, #cant_servicio, #precio_servicio, #obs_detalle").val("");
   $("#cant_servicio").val(1);
-
-  // placeholder: preferí value="" (o "0"), como tengas
-  $("#producto_rel").val("").trigger("change");       // Select2/normal
-  $("#producto_rel").prop("disabled", false);         // por si algún código lo deshabilitó
+  $("#producto_rel").prop("disabled", false).val("").trigger("change");
 }
-
 
 $(document).on("click",".quitar-detalle",function(){
   $(this).closest("tr").remove();
@@ -222,8 +207,10 @@ function editarServicio(id){
   const contenido = dameContenido("paginas/movimientos/servicio/servicios/agregar.php");
   $(".contenido-principal").html(contenido);
   $("#editar").val("SI");
+
   cargarListaCliente("#cliente_lst");
   cargarListaProducto("#producto_rel");
+  $("#producto_rel").prop("disabled", false).val("").trigger("change");
 
   $.post("controladores/servicio.php", { id })
     .done(function(resp){
@@ -287,3 +274,12 @@ function eliminarServicio(id){
       });
   });
 }
+
+// =================== Exportar a global ===================
+window.mostrarListarServicio  = mostrarListarServicio;
+window.cargarTablaServicio    = cargarTablaServicio;
+window.mostrarAgregarServicio = mostrarAgregarServicio;
+window.agregarDetalle         = agregarDetalle;
+window.guardarServicio        = guardarServicio;
+window.editarServicio         = editarServicio;
+window.eliminarServicio       = eliminarServicio;
