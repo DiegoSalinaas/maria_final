@@ -53,7 +53,7 @@
     <div class="col-md-3"><input type="text" id="desc_servicio" class="form-control" placeholder="Descripción"></div>
     <div class="col-md-2"><input type="text" id="producto_rel" class="form-control" placeholder="Producto Relacionado"></div>
     <div class="col-md-1"><input type="number" id="cant_servicio" class="form-control" value="1" min="1" placeholder="Cant."></div>
-    <div class="col-md-2"><input type="number" id="precio_servicio" class="form-control" placeholder="Precio Unitario"></div>
+    <div class="col-md-2"><input type="number" id="precio_servicio" class="form-control" placeholder="Precio"></div>
     <div class="col-md-1"><input type="text" id="obs_detalle" class="form-control" placeholder="Obs."></div>
     <div class="col-md-12" style="margin-top:10px;">
         <button class="btn btn-primary" onclick="agregarDetalle(); return false;">Agregar</button>
