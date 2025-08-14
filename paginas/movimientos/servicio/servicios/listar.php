@@ -37,7 +37,6 @@
             <option value="">Todos</option>
             <option value="PENDIENTE">Pendiente</option>
             <option value="EN PROCESO">En Proceso</option>
-            <option value="TERMINADO">Terminado</option>
             <option value="ANULADO">Anulado</option>
           </select>
           <small class="text-muted">Filtro opcional por estado</small>
