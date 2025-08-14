@@ -4,7 +4,6 @@ CREATE TABLE `servicios` (
   `id_cliente` INT NOT NULL,
   `ci_cliente` VARCHAR(20),
   `telefono_cliente` VARCHAR(20),
-  `email_cliente` VARCHAR(100),
   `fecha_servicio` DATE NOT NULL,
   `tecnico` VARCHAR(100) NOT NULL,
   `estado` VARCHAR(20) NOT NULL,
