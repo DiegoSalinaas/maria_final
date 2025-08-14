@@ -189,3 +189,53 @@ function eliminarPresupuestoServicio(id){
         }
     });
 }
+
+function postPresupuesto(data, onOk){
+  $.ajax({
+    url: "controladores/presupuesto.php",
+    method: "POST",
+    data: { guardar: JSON.stringify(data) }, // IMPORTANTE: el PHP espera un campo llamado "guardar"
+    success: function(resp){
+      // resp puede ser el id (string) o un JSON. Intentamos parsear:
+      try {
+        const j = JSON.parse(resp);
+        if (j.ok === false) {
+          console.error("Error servidor:", j.error);
+          mensaje_dialogo_info_ERROR(j.error || "Error al guardar.");
+          return;
+        }
+        onOk && onOk(j);
+      } catch(_){
+        // No es JSON: seguramente devolvió el ID
+        onOk && onOk(resp);
+      }
+    },
+    error: function(xhr){
+      console.error("Guardar 400:", xhr.status, xhr.responseText);
+      // Si tu PHP devolvió {"ok":false,"error":"..."}
+      try {
+        const j = JSON.parse(xhr.responseText);
+        mensaje_dialogo_info_ERROR(j.error || "Error al guardar.");
+      } catch(_){
+        mensaje_dialogo_info_ERROR("Error al guardar (400). Revisá Network/Response.");
+      }
+    }
+  });
+}
+function getPresupuestos(onOk){
+  $.ajax({
+    url: "controladores/presupuesto.php",
+    method: "POST",
+    data: { leer: 1 },
+    success: onOk,
+    error: function(xhr){
+      console.error("Leer 400:", xhr.status, xhr.responseText);
+      try {
+        const j = JSON.parse(xhr.responseText);
+        mensaje_dialogo_info_ERROR(j.error || "Error al listar.");
+      } catch(_){
+        mensaje_dialogo_info_ERROR("Error al listar (400).");
+      }
+    }
+  });
+}
