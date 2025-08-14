@@ -27,25 +27,19 @@ function mostrarListarPresupuestoServicio(){
   $(".contenido-principal").html(contenido);
   cargarTablaPresupuestoServicio();
 
-  // Filtros (si existen en tu listar)
-  $("#buscar-presupuesto, #fecha_desde, #fecha_hasta, #estado_filtro").on("input change", function(){
-    cargarTablaPresupuestoServicio();
+  // Filtros del listado
+  $("#b_presupuesto_serv").on("keypress", function(e){
+    if(e.which === 13) cargarTablaPresupuestoServicio();
   });
+  $("#estado_lst_pres_serv").on("change", cargarTablaPresupuestoServicio);
 }
 
 function cargarTablaPresupuestoServicio(){
-  const buscar = $("#buscar-presupuesto").val()?.trim() || "";
-  const desde  = $("#fecha_desde").val() || "";
-  const hasta  = $("#fecha_hasta").val() || "";
-  const estado = $("#estado_filtro").val() || "";
-
-  if (desde && hasta && new Date(desde) > new Date(hasta)) {
-    mensaje_dialogo_info_ERROR("La fecha 'Desde' no puede ser mayor que 'Hasta'.", "ATENCIÓN");
-    return;
-  }
+  const buscar = $("#b_presupuesto_serv").val()?.trim() || "";
+  const estado = $("#estado_lst_pres_serv").val() || "";
 
   const datos = ejecutarAjax("controladores/presupuesto.php", $.param({
-    leer: 1, buscar, fecha_desde: desde, fecha_hasta: hasta, estado
+    leer: 1, buscar, estado
   }));
 
   let filas = "";

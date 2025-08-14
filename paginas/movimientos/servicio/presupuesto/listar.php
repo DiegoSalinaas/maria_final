@@ -24,7 +24,7 @@
           <div class="input-group">
             <span class="input-group-text"><i class="typcn typcn-zoom"></i></span>
             <input type="text" id="b_presupuesto_serv" class="form-control" placeholder="Buscar por cliente o número…">
-            <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('b_presupuesto_serv').value='';">
+            <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('b_presupuesto_serv').value='';cargarTablaPresupuestoServicio();">
               <i class="typcn typcn-delete-outline"></i>
             </button>
           </div>
