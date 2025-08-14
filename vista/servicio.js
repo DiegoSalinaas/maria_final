@@ -104,45 +104,65 @@ function mostrarAgregarServicio(){
 
 
 // ===== Detalle =====
-function agregarDetalle(){
-  const tipo    = String($("#tipo_servicio").val() || "").trim();
-  const desc    = String($("#desc_servicio").val() || "").trim();
-  const prodTxt = String($("#producto_rel_txt").val() || "").trim();  // <-- TEXTO LIBRE
-  const cant    = qdc($("#cant_servicio").val());
-  const precio  = qdc($("#precio_servicio").val());
-  const obs     = String($("#obs_detalle").val() || "").trim();
+function agregarDetalle() {
+    const tipo    = ($("#tipo_servicio").val() || "").trim();
+    const desc    = ($("#desc_servicio").val() || "").trim();
+    const prodTxt = ($("#producto_rel_txt").val() || "").trim();
 
-  if (!prodTxt){
-    if (window.mensaje_dialogo_info_ERROR) mensaje_dialogo_info_ERROR("Debes escribir el producto.", "ATENCIÓN");
-    else alert("Debes escribir el producto.");
-    $("#producto_rel_txt").focus();
-    return;
-  }
-  if (!tipo || !desc || cant <= 0 || precio <= 0){
-    if (window.mensaje_dialogo_info_ERROR) mensaje_dialogo_info_ERROR("Complete el detalle correctamente.", "ATENCIÓN");
-    else alert("Complete el detalle correctamente.");
-    return;
-  }
+    // Limpiar cantidad: quitar cualquier caracter que no sea dígito o punto/coma
+    let cantVal = ($("#cant_servicio").val() || "")
+        .replace(/\u00A0/g, "")     // elimina espacios duros
+        .replace(/[^\d,.\-]/g, "")  // elimina letras y símbolos
+        .replace(",", ".")          // coma a punto
+        .trim();
+    const cant = parseFloat(cantVal);
 
-  const subtotal = cant * precio;
+    let precioVal = ($("#precio_servicio").val() || "")
+        .replace(/\u00A0/g, "")
+        .replace(/[^\d,.\-]/g, "")
+        .replace(",", ".")
+        .trim();
+    const precio = parseFloat(precioVal);
 
-  $("#detalle_servicio").append(`
-    <tr>
-      <td>${tipo}</td>
-      <td>${desc}</td>
-      <td>${prodTxt}</td>
-      <td class="text-end">${cant}</td>
-      <td class="text-end">${precio}</td>
-      <td class="text-end">${subtotal}</td>
-      <td>${obs}</td>
-      <td><button type="button" class='btn btn-danger btn-sm quitar-detalle'>Quitar</button></td>
-    </tr>
-  `);
+    const obs = ($("#obs_detalle").val() || "").trim();
 
-  // Limpiar inputs
-  $("#tipo_servicio, #desc_servicio, #producto_rel_txt, #precio_servicio, #obs_detalle").val("");
-  $("#cant_servicio").val(1);
+    if (!prodTxt) { alert("Debes escribir el producto."); $("#producto_rel_txt").focus(); return; }
+    if (!tipo)    { alert("Debes seleccionar el tipo."); $("#tipo_servicio").focus(); return; }
+    if (!desc)    { alert("Debes escribir la descripción."); $("#desc_servicio").focus(); return; }
+    if (isNaN(cant) || cant <= 0) {
+        console.log("Valor crudo de cantidad:", $("#cant_servicio").val());
+        console.log("Cantidad procesada:", cantVal);
+        alert("Cantidad inválida.");
+        $("#cant_servicio").focus();
+        return;
+    }
+    if (isNaN(precio) || precio <= 0) { alert("Precio inválido."); $("#precio_servicio").focus(); return; }
+
+    const subtotal = cant * precio;
+
+    $("#detalle_servicio").append(`
+        <tr>
+            <td>${tipo}</td>
+            <td>${desc}</td>
+            <td>${prodTxt}</td>
+            <td class="text-end">${cant}</td>
+            <td class="text-end">${precio}</td>
+            <td class="text-end">${subtotal.toFixed(2)}</td>
+            <td>${obs}</td>
+            <td><button type="button" class='btn btn-danger btn-sm quitar-detalle'>Quitar</button></td>
+        </tr>
+    `);
+
+    $("#tipo_servicio, #desc_servicio, #producto_rel_txt, #precio_servicio, #obs_detalle").val("");
+    $("#cant_servicio").val(1);
 }
+
+
+// Eliminar fila
+$(document).on("click", ".quitar-detalle", function() {
+    $(this).closest("tr").remove();
+});
+
 
 $(document).on("click",".quitar-detalle", function(){
   $(this).closest("tr").remove();
