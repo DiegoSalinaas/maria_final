@@ -70,13 +70,9 @@
       <input type="text" id="desc_servicio" class="form-control" placeholder="Descripción">
     </div>
 
-
-      <div class="col-md-2">
+    <div class="col-md-2 mt-2">
       <input type="text" id="producto_rel_txt" class="form-control" placeholder="Producto">
-
-       </div>
-
-
+    </div>
 
     <div class="col-md-1 mt-2">
       <input type="number" id="cant_servicio" class="form-control" value="1" min="1" step="1" placeholder="Cant.">
@@ -91,11 +87,9 @@
     </div>
 
     <div class="col-md-12" style="margin-top:10px;">
-     <button type="button" class="btn btn-primary" onclick="agregarDetalle(); return false;">
-  Agregar
-</button>
-
-      
+      <button type="button" class="btn btn-primary" onclick="agregarDetalle(); return false;">
+        Agregar
+      </button>
     </div>
 
     <div class="col-md-12" style="margin-top:10px;">

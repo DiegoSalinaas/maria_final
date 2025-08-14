@@ -49,6 +49,9 @@ function mostrarAgregarServicio(){
 
   $("#editar").val("NO");
 
+  // El campo de producto es texto libre; evita validaciones de selección
+  $("#producto_rel_txt").prop("required", false);
+
   // Tu función existente para clientes
   cargarListaCliente("#cliente_lst");
 
@@ -78,16 +81,6 @@ function mostrarAgregarServicio(){
         $("#telefono_cliente").val(c.telefono || "");
       }catch(_){
         $("#ci_cliente,#telefono_cliente").val("");
-        
-        // 1) desactivar validación automática a nivel form
-$("#frm-servicio").attr("novalidate", true);
-
-// 2) garantizar que el botón de “Agregar” no sea submit
-$("button[type=submit]").attr("type", "button");
-
-// 3) asegurarte que el campo de producto NO sea required
-$("#producto_rel, #producto_rel_txt").prop("required", false);
-
       }
     });
   });
