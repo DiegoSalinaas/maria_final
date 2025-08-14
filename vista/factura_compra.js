@@ -101,7 +101,20 @@ function getProductoPorIdDesdeProyecto(idProd) {
 function mostrarListarFacturaCompra() {
   let contenido = dameContenido("paginas/movimientos/compra/factura_compra/listar.php");
   $(".contenido-principal").html(contenido);
+  wireEventosListadoFacturaCompra();
   cargarTablaFacturaCompra();
+}
+
+function wireEventosListadoFacturaCompra() {
+  $("#b_cliente2").off("keyup").on("keyup", function (e) {
+    if (e.key === "Enter") cargarTablaFacturaCompra();
+  });
+  $("#btn_limpiar_fc").off("click").on("click", function () {
+    $("#b_cliente2").val("");
+    cargarTablaFacturaCompra();
+  });
+  $("#estado_lst_fc").off("change").on("change", cargarTablaFacturaCompra);
+  $("#fecha_desde_fc, #fecha_hasta_fc").off("change").on("change", cargarTablaFacturaCompra);
 }
 
 function mostrarAgregarFacturaCompra() {
@@ -317,11 +330,18 @@ function guardarFacturaCompra() {
 
 
 function cargarTablaFacturaCompra() {
-  const data = ejecutarAjax("controladores/factura_compra.php", "leer=1");
+  const buscar = $("#b_cliente2").val() || "";
+  const estado = $("#estado_lst_fc").val() || "";
+  const desde = $("#fecha_desde_fc").val() || "";
+  const hasta = $("#fecha_hasta_fc").val() || "";
+
+  const params = `leer=1&buscar=${encodeURIComponent(buscar)}&estado=${encodeURIComponent(estado)}&desde=${encodeURIComponent(desde)}&hasta=${encodeURIComponent(hasta)}`;
+  const data = ejecutarAjax("controladores/factura_compra.php", params);
 
   let fila = "";
   if (data === "0") {
-    fila = "NO HAY REGISTROS";
+    $("#factura_compra").html("");
+    $("#fc_empty_state").removeClass("d-none");
   } else {
     const json_data = JSON.parse(data);
     json_data.map(function (item) {
@@ -339,8 +359,9 @@ function cargarTablaFacturaCompra() {
                </td>`;
       fila += `</tr>`;
     });
+    $("#fc_empty_state").addClass("d-none");
+    $("#factura_compra").html(fila);
   }
-  $("#factura_compra").html(fila);
 }
 
 function imprimirFacturaCompra(id) {

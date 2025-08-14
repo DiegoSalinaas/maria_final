@@ -88,7 +88,28 @@ if(isset($_POST['leer'])){
 
 function leer(){
     $base_datos = new DB();
-    $query = $base_datos->conectar()->prepare("SELECT 
+
+    $where = "";
+    $params = [];
+
+    if (!empty($_POST['buscar'])) {
+        $where .= " AND (p.pro_razonsocial LIKE :buscar OR fc.nro_factura LIKE :buscar OR fc.fecha_compra LIKE :buscar)";
+        $params[':buscar'] = "%" . $_POST['buscar'] . "%";
+    }
+    if (!empty($_POST['estado'])) {
+        $where .= " AND fc.estado_registro = :estado";
+        $params[':estado'] = $_POST['estado'];
+    }
+    if (!empty($_POST['desde'])) {
+        $where .= " AND fc.fecha_compra >= :desde";
+        $params[':desde'] = $_POST['desde'];
+    }
+    if (!empty($_POST['hasta'])) {
+        $where .= " AND fc.fecha_compra <= :hasta";
+        $params[':hasta'] = $_POST['hasta'];
+    }
+
+    $sql = "SELECT
 fc.cod_registro as cod_compra,
 fc.fecha_compra,
 fc.condicion,
@@ -102,16 +123,15 @@ u.cod_usuario,
 u.usuario_alias  as nombre_apellido,
 sum(dc.cantidad * dc.costo) as total
 from compra fc
-join detalle_compra dc on dc.cod_compra  = fc.cod_registro 
-JOIN proveedor p 
-on p.cod_proveedor = fc.cod_proveedor 
-join usuario  u 
-on u.cod_usuario = fc.cod_usuario 
+join detalle_compra dc on dc.cod_compra  = fc.cod_registro
+JOIN proveedor p on p.cod_proveedor = fc.cod_proveedor
+join usuario  u on u.cod_usuario = fc.cod_usuario
+WHERE 1=1 {$where}
 group by fc.cod_registro
-order by  fc.cod_registro  desc 
-");
-    
-    $query->execute();
+order by  fc.cod_registro  desc";
+
+    $query = $base_datos->conectar()->prepare($sql);
+    $query->execute($params);
 
     if ($query->rowCount()) {
         print_r(json_encode($query->fetchAll(PDO::FETCH_OBJ)));
