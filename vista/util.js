@@ -151,6 +151,43 @@ function dameFechaActualFormateada() {
 
     return actual;
 }
+// --- Badges de estado (global) ---
+(function (global) {
+  if (typeof global.badgeEstado === "function") return; // si ya existe, no redefinir
+
+  global.badgeEstado = function (estado) {
+    const est = (estado ?? "")
+      .toString().trim()
+      .normalize("NFD").replace(/\p{Diacritic}/gu, "")
+      .toUpperCase();
+
+    let cls = "";
+    switch (est) {
+      case "ACTIVO":
+      case "APROBADO":
+        cls = "bg-success"; // Verde
+        break;
+      case "EMITIDO":
+      case "CERRADA":
+        cls = "bg-secondary"; // Gris
+        break;
+      case "PENDIENTE":
+        cls = "bg-warning text-dark"; // Amarillo
+        break;
+      case "INACTIVO":
+      case "ANULADO":
+        cls = "bg-danger"; // Rojo
+        break;
+      case "DIAGNOSTICADO":
+        cls = "bg-info text-dark"; // Celeste
+        break;
+      default:
+        cls = "bg-light text-dark border"; // Por defecto
+    }
+    return `<span class="badge ${cls}">${estado ?? ""}</span>`;
+  };
+})(window);
+
 function dameFechaActualSQL() {
     var fecha = new Date();
     var mes = fecha.getMonth() + 1;

@@ -1,14 +1,13 @@
 <?php
 require_once '../conexion/db.php';
 
-if (isset($_POST['anular'])) anular($_POST['anular']);
-
-if (isset($_POST['guardar']))          guardar($_POST['guardar']);
-if (isset($_POST['leer']))             leer();
-if (isset($_POST['id']))               id($_POST['id']);
-if (isset($_POST['ultimo_registro']))  ultimo_registro();
-if (isset($_POST['actualizar']))       actualizar($_POST['actualizar']);
-if (isset($_POST['eliminar']))         eliminar($_POST['eliminar']);
+if (isset($_POST['anular']))            anular($_POST['anular']);
+if (isset($_POST['guardar']))           guardar($_POST['guardar']);
+if (isset($_POST['leer']))              leer();
+if (isset($_POST['id']))                id($_POST['id']);
+if (isset($_POST['ultimo_registro']))   ultimo_registro();
+if (isset($_POST['actualizar']))        actualizar($_POST['actualizar']);
+if (isset($_POST['eliminar']))          eliminar($_POST['eliminar']);
 
 function getPDO() {
     $db = new DB();
@@ -17,12 +16,7 @@ function getPDO() {
     return $pdo;
 }
 
-/**
- * Normaliza strings numéricos como:
- *  - "1.234.567,89"  -> 1234567.89
- *  - "1,234,567.89"  -> 1234567.89
- *  - "1234567"       -> 1234567.00
- */
+/** Normaliza "1.234.567,89" | "1,234,567.89" | "1234567" -> float */
 function toFloat($v) {
     if ($v === null) return 0.0;
     $s = trim((string)$v);
@@ -57,20 +51,19 @@ function guardar($lista){
         $subtotal_insumos   = toFloat($cab['subtotal_insumos']   ?? 0);
         $total              = toFloat($cab['total']              ?? 0);
 
-        // Validaciones mínimas
         if (!$fecha_emision || !$fecha_vencimiento) throw new Exception("Fechas requeridas.");
         if ($id_cliente <= 0)                        throw new Exception("Cliente inválido.");
         if ($estado === '')                          throw new Exception("Estado es requerido.");
         if ($total <= 0)                             throw new Exception("Total debe ser > 0.");
 
-        // Verifica FK a cliente_1(cod_cliente)
+        // Verifica FK cliente
         $st = $pdo->prepare("SELECT 1 FROM cliente_1 WHERE cod_cliente = ?");
         $st->execute([$id_cliente]);
         if (!$st->fetchColumn()) throw new Exception("El cliente ($id_cliente) no existe en cliente_1.");
 
         $pdo->beginTransaction();
 
-        // Insert cabecera (created_at queda por DEFAULT CURRENT_TIMESTAMP)
+        // CABECERA (created_at por DEFAULT)
         $sqlCab = "INSERT INTO presupuestos
             (fecha_emision, fecha_vencimiento, id_cliente, estado, observaciones,
              subtotal_servicios, subtotal_insumos, total)
@@ -88,7 +81,7 @@ function guardar($lista){
 
         $id = (int)$pdo->lastInsertId();
 
-        // Insert detalles SERVICIOS (con DESCUENTO)
+        // DETALLES SERVICIOS (con descuento)
         if (!empty($datos['servicios']) && is_array($datos['servicios'])) {
             $sqlServ = "INSERT INTO presupuesto_servicios
                 (id_presupuesto, tipo_servicio, descripcion, cantidad, precio_unitario, descuento, total_linea)
@@ -101,7 +94,6 @@ function guardar($lista){
                 $cantidad        = (int)($s['cantidad']     ?? 0);
                 $precio_unitario = toFloat($s['precio_unitario'] ?? 0);
                 $descuento       = toFloat($s['descuento']       ?? 0);
-                // Si no vino total_linea, calculamos (precio*cant - desc), sin negativos
                 $calc_total      = max(0, ($cantidad * $precio_unitario) - $descuento);
                 $total_linea     = toFloat($s['total_linea'] ?? $calc_total);
 
@@ -121,7 +113,7 @@ function guardar($lista){
             }
         }
 
-        // Insert detalles INSUMOS (si corresponde)
+        // DETALLES INSUMOS
         if (!empty($datos['insumos']) && is_array($datos['insumos'])) {
             $sqlIns = "INSERT INTO presupuesto_insumos
                 (id_presupuesto, descripcion, marca, modelo, cantidad, precio_unitario, total_linea)
@@ -154,10 +146,12 @@ function guardar($lista){
         }
 
         $pdo->commit();
-        echo $id;
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['ok' => true, 'id' => $id]);
     } catch (Exception $e) {
-        if ($pdo->inTransaction()) $pdo->rollBack();
+        if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
         http_response_code(400);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
     }
 }
@@ -175,23 +169,13 @@ function leer(){
         $pars  = [];
 
         if ($buscar !== '') {
-            // busca por nro de presupuesto o por nombre de cliente
             $where[] = "(p.id_presupuesto = ? OR c.nombre_cliente LIKE ?)";
             $pars[]  = $buscar;
             $pars[]  = "%$buscar%";
         }
-        if ($desde !== '') {
-            $where[] = "p.fecha_emision >= ?";
-            $pars[]  = $desde;
-        }
-        if ($hasta !== '') {
-            $where[] = "p.fecha_emision <= ?";
-            $pars[]  = $hasta;
-        }
-        if ($estado !== '') {
-            $where[] = "p.estado = ?";
-            $pars[]  = $estado;
-        }
+        if ($desde !== '') { $where[] = "p.fecha_emision >= ?"; $pars[] = $desde; }
+        if ($hasta !== '') { $where[] = "p.fecha_emision <= ?"; $pars[] = $hasta; }
+        if ($estado !== ''){ $where[] = "p.estado = ?";         $pars[] = $estado; }
 
         $sql = "
             SELECT p.id_presupuesto,
@@ -208,14 +192,15 @@ function leer(){
         $q = $pdo->prepare($sql);
         $q->execute($pars);
 
+        header('Content-Type: application/json; charset=utf-8');
         if ($q->rowCount()) echo json_encode($q->fetchAll(PDO::FETCH_OBJ));
         else echo '0';
     } catch (Exception $e) {
         http_response_code(400);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
     }
 }
-
 
 function id($id){
     try {
@@ -231,6 +216,7 @@ function id($id){
         $ins = $pdo->prepare("SELECT * FROM presupuesto_insumos WHERE id_presupuesto=?");
         $ins->execute([$id]);
 
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode([
             'cabecera'  => $cabecera,
             'servicios' => $serv->fetchAll(PDO::FETCH_ASSOC),
@@ -238,6 +224,7 @@ function id($id){
         ]);
     } catch (Exception $e) {
         http_response_code(400);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
     }
 }
@@ -248,13 +235,12 @@ function ultimo_registro(){
         $q = $pdo->prepare("SELECT id_presupuesto FROM presupuestos ORDER BY id_presupuesto DESC LIMIT 1");
         $q->execute();
         $row = $q->fetch(PDO::FETCH_ASSOC);
-        if ($row) {
-            echo json_encode($row);
-        } else {
-            echo '0';
-        }
+        header('Content-Type: application/json; charset=utf-8');
+        if ($row) echo json_encode($row);
+        else echo '0';
     } catch (Exception $e) {
         http_response_code(400);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
     }
 }
@@ -286,14 +272,13 @@ function actualizar($lista){
         if ($estado === '')                          throw new Exception("Estado es requerido.");
         if ($total <= 0)                             throw new Exception("Total debe ser > 0.");
 
-        // Verifica FK cliente
         $st = $pdo->prepare("SELECT 1 FROM cliente_1 WHERE cod_cliente = ?");
         $st->execute([$id_cliente]);
         if (!$st->fetchColumn()) throw new Exception("El cliente ($id_cliente) no existe en cliente_1.");
 
         $pdo->beginTransaction();
 
-        // Update cabecera
+        // UPDATE cabecera
         $sqlUp = "UPDATE presupuestos
                   SET fecha_emision=?, fecha_vencimiento=?, id_cliente=?, estado=?, observaciones=?,
                       subtotal_servicios=?, subtotal_insumos=?, total=?
@@ -310,11 +295,10 @@ function actualizar($lista){
             $id_presupuesto
         ]);
 
-        // Limpia detalles y re-inserta
+        // Reemplaza detalles
         $pdo->prepare("DELETE FROM presupuesto_servicios WHERE id_presupuesto=?")->execute([$id_presupuesto]);
         $pdo->prepare("DELETE FROM presupuesto_insumos   WHERE id_presupuesto=?")->execute([$id_presupuesto]);
 
-        // Reinsertar SERVICIOS (con descuento)
         if (!empty($datos['servicios']) && is_array($datos['servicios'])) {
             $sqlServ = "INSERT INTO presupuesto_servicios
                 (id_presupuesto, tipo_servicio, descripcion, cantidad, precio_unitario, descuento, total_linea)
@@ -346,7 +330,6 @@ function actualizar($lista){
             }
         }
 
-        // Reinsertar INSUMOS
         if (!empty($datos['insumos']) && is_array($datos['insumos'])) {
             $sqlIns = "INSERT INTO presupuesto_insumos
                 (id_presupuesto, descripcion, marca, modelo, cantidad, precio_unitario, total_linea)
@@ -379,10 +362,12 @@ function actualizar($lista){
         }
 
         $pdo->commit();
-        echo $id_presupuesto;
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['ok' => true, 'id' => $id_presupuesto]);
     } catch (Exception $e) {
-        if ($pdo->inTransaction()) $pdo->rollBack();
+        if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
         http_response_code(400);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['ok' => false, 'error' => $e->getMessage()]);
     }
 }
@@ -391,32 +376,34 @@ function eliminar($id){
     $pdo = getPDO();
     try {
         $pdo->beginTransaction();
-        // Si tus FKs de detalles tienen ON DELETE CASCADE, las dos líneas siguientes son opcionales.
+        // Si tus FKs tienen ON DELETE CASCADE, los deletes de detalles son opcionales:
         $pdo->prepare("DELETE FROM presupuesto_servicios WHERE id_presupuesto=?")->execute([$id]);
         $pdo->prepare("DELETE FROM presupuesto_insumos   WHERE id_presupuesto=?")->execute([$id]);
         $pdo->prepare("DELETE FROM presupuestos          WHERE id_presupuesto=?")->execute([$id]);
         $pdo->commit();
-        echo '1';
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['ok' => true]);
     } catch (Exception $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
         http_response_code(400);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
     }
 }
+
 function anular($id){
     $pdo = getPDO();
     try {
         $pdo->beginTransaction();
-
-        // Evita re-anular; podés bloquear otros estados si querés (p.ej. APROBADO)
         $st = $pdo->prepare("UPDATE presupuestos SET estado='ANULADO' WHERE id_presupuesto=? AND estado <> 'ANULADO'");
         $st->execute([$id]);
-
         $pdo->commit();
-        echo $st->rowCount() > 0 ? '1' : '0';
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['ok' => $st->rowCount() > 0]);
     } catch (Exception $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
         http_response_code(400);
+        header('Content-Type: application/json; charset=utf-8');
         echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
     }
 }
