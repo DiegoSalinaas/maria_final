@@ -174,8 +174,9 @@ function leer(){
             ORDER BY p.id_presupuesto DESC
         ");
         $q->execute();
-        if ($q->rowCount()) {
-            echo json_encode($q->fetchAll(PDO::FETCH_OBJ));
+        $rows = $q->fetchAll(PDO::FETCH_OBJ);
+        if ($rows) {
+            echo json_encode($rows);
         } else {
             echo '0';
         }
@@ -190,9 +191,8 @@ function id($id){
         $pdo = getPDO();
         $cab = $pdo->prepare("SELECT * FROM presupuestos WHERE id_presupuesto=?");
         $cab->execute([$id]);
-        if (!$cab->rowCount()) { echo '0'; return; }
-
         $cabecera = $cab->fetch(PDO::FETCH_ASSOC);
+        if (!$cabecera) { echo '0'; return; }
 
         $serv = $pdo->prepare("SELECT * FROM presupuesto_servicios WHERE id_presupuesto=?");
         $serv->execute([$id]);
@@ -216,8 +216,9 @@ function ultimo_registro(){
         $pdo = getPDO();
         $q = $pdo->prepare("SELECT id_presupuesto FROM presupuestos ORDER BY id_presupuesto DESC LIMIT 1");
         $q->execute();
-        if ($q->rowCount()) {
-            echo json_encode($q->fetch(PDO::FETCH_ASSOC));
+        $row = $q->fetch(PDO::FETCH_ASSOC);
+        if ($row) {
+            echo json_encode($row);
         } else {
             echo '0';
         }
