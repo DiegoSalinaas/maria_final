@@ -7,6 +7,7 @@ if (isset($_POST['leer']))              leer();
 if (isset($_POST['id']))                id($_POST['id']);
 if (isset($_POST['ultimo_registro']))   ultimo_registro();
 if (isset($_POST['actualizar']))        actualizar($_POST['actualizar']);
+if (isset($_POST['anular']))           anular($_POST['anular']);
 if (isset($_POST['eliminar']))          eliminar($_POST['eliminar']);
 
 function getPDO(){
@@ -284,6 +285,18 @@ function actualizar($lista){
         echo json_encode(['ok'=>true, 'id'=>$id_servicio]);
     } catch (Throwable $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
+        http_response_code(400);
+        echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
+    }
+}
+
+function anular($id){
+    header('Content-Type: application/json; charset=utf-8');
+    $pdo = getPDO();
+    try {
+        $pdo->prepare("UPDATE servicios SET estado='ANULADO' WHERE id_servicio=?")->execute([$id]);
+        echo json_encode(['ok'=>true]);
+    } catch (Throwable $e) {
         http_response_code(400);
         echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
     }
