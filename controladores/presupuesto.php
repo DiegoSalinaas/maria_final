@@ -1,6 +1,8 @@
 <?php
 require_once '../conexion/db.php';
 
+if (isset($_POST['anular'])) anular($_POST['anular']);
+
 if (isset($_POST['guardar']))          guardar($_POST['guardar']);
 if (isset($_POST['leer']))             leer();
 if (isset($_POST['id']))               id($_POST['id']);
@@ -163,28 +165,57 @@ function guardar($lista){
 function leer(){
     try {
         $pdo = getPDO();
-        $q = $pdo->prepare("
+
+        $buscar = trim($_POST['buscar'] ?? '');
+        $desde  = $_POST['fecha_desde'] ?? '';
+        $hasta  = $_POST['fecha_hasta'] ?? '';
+        $estado = trim($_POST['estado'] ?? '');
+
+        $where = [];
+        $pars  = [];
+
+        if ($buscar !== '') {
+            // busca por nro de presupuesto o por nombre de cliente
+            $where[] = "(p.id_presupuesto = ? OR c.nombre_cliente LIKE ?)";
+            $pars[]  = $buscar;
+            $pars[]  = "%$buscar%";
+        }
+        if ($desde !== '') {
+            $where[] = "p.fecha_emision >= ?";
+            $pars[]  = $desde;
+        }
+        if ($hasta !== '') {
+            $where[] = "p.fecha_emision <= ?";
+            $pars[]  = $hasta;
+        }
+        if ($estado !== '') {
+            $where[] = "p.estado = ?";
+            $pars[]  = $estado;
+        }
+
+        $sql = "
             SELECT p.id_presupuesto,
                    p.fecha_emision,
-                   c.descripcion AS cliente,
+                   c.nombre_cliente AS cliente,
                    p.total,
                    p.estado
             FROM presupuestos p
             JOIN cliente_1 c ON c.cod_cliente = p.id_cliente
-            ORDER BY p.id_presupuesto DESC
-        ");
-        $q->execute();
-        $rows = $q->fetchAll(PDO::FETCH_OBJ);
-        if ($rows) {
-            echo json_encode($rows);
-        } else {
-            echo '0';
-        }
+        ";
+        if ($where) $sql .= " WHERE ".implode(" AND ", $where);
+        $sql .= " ORDER BY p.id_presupuesto DESC";
+
+        $q = $pdo->prepare($sql);
+        $q->execute($pars);
+
+        if ($q->rowCount()) echo json_encode($q->fetchAll(PDO::FETCH_OBJ));
+        else echo '0';
     } catch (Exception $e) {
         http_response_code(400);
         echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
     }
 }
+
 
 function id($id){
     try {
@@ -366,6 +397,23 @@ function eliminar($id){
         $pdo->prepare("DELETE FROM presupuestos          WHERE id_presupuesto=?")->execute([$id]);
         $pdo->commit();
         echo '1';
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        http_response_code(400);
+        echo json_encode(['ok'=>false,'error'=>$e->getMessage()]);
+    }
+}
+function anular($id){
+    $pdo = getPDO();
+    try {
+        $pdo->beginTransaction();
+
+        // Evita re-anular; podés bloquear otros estados si querés (p.ej. APROBADO)
+        $st = $pdo->prepare("UPDATE presupuestos SET estado='ANULADO' WHERE id_presupuesto=? AND estado <> 'ANULADO'");
+        $st->execute([$id]);
+
+        $pdo->commit();
+        echo $st->rowCount() > 0 ? '1' : '0';
     } catch (Exception $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
         http_response_code(400);
