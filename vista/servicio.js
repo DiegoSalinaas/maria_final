@@ -102,14 +102,19 @@ function mostrarAgregarServicio(){
   });
 }
 
-function agregarDetalle() {
-    const tipo    = ($("#tipo_servicio").val() || "").trim();
-    const desc    = ($("#desc_servicio").val() || "").trim();
-    const prodTxt = ($("#producto_rel_txt").val() || "").trim();
+  function agregarDetalle() {
+      const tipo    = ($("#tipo_servicio").val() || "").trim();
+      const desc    = ($("#desc_servicio").val() || "").trim();
+      const prodTxt = ($("#producto_rel_txt").val() || "").trim();
 
-    const cant    = parseFloat($("#cant_servicio").val());
-    const precio  = parseFloat($("#precio_servicio").val());
-    const obs     = ($("#obs_detalle").val() || "").trim();
+      // Permitir que los valores numéricos se carguen con separadores de miles
+      const toNum = v => parseFloat(String(v || "0")
+                                   .replace(/\s/g, "")
+                                   .replace(/\./g, "")
+                                   .replace(",", "."));
+      const cant    = toNum($("#cant_servicio").val());
+      const precio  = toNum($("#precio_servicio").val());
+      const obs     = ($("#obs_detalle").val() || "").trim();
 
     if (!prodTxt) { alert("Debes escribir el producto."); $("#producto_rel_txt").focus(); return; }
     if (!tipo)    { alert("Debes seleccionar el tipo."); $("#tipo_servicio").focus(); return; }

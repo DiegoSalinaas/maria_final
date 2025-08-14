@@ -75,11 +75,11 @@
     </div>
 
     <div class="col-md-1 mt-2">
-      <input type="number" id="cant_servicio" class="form-control" value="1" min="1" step="1" placeholder="Cant.">
+      <input type="text" id="cant_servicio" class="form-control text-end" value="1" placeholder="Cant.">
     </div>
 
     <div class="col-md-2 mt-2">
-      <input type="number" id="precio_servicio" class="form-control" placeholder="Precio" step="0.01" min="0">
+      <input type="text" id="precio_servicio" class="form-control text-end" placeholder="Precio">
     </div>
 
     <div class="col-md-1 mt-2">
