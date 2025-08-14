@@ -40,7 +40,7 @@ function cargarTablaServicio(){
             <div class="btn-group btn-group-sm" role="group">
               <button class='btn btn-outline-secondary' onclick='imprimirServicio(${item.id_servicio}); return false;'>Imprimir</button>
               <button class='btn btn-primary' onclick='editarServicio(${item.id_servicio}); return false;'>Editar</button>
-              <button class='btn btn-danger' onclick='eliminarServicio(${item.id_servicio}); return false;'>Eliminar</button>
+              <button class='btn btn-danger' onclick='anularServicio(${item.id_servicio}); return false;'>Anular</button>
             </div>
           </td>
         </tr>`;
@@ -270,39 +270,39 @@ function editarServicio(id){
     });
 }
 
-// ===== Eliminar =====
-function eliminarServicio(id){
+// ===== Anular =====
+function anularServicio(id){
   if (window.Swal){
     Swal.fire({
       title: "ATENCIÓN",
-      text: "¿Desea eliminar el registro?",
+      text: "¿Desea anular el servicio?",
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Sí",
       cancelButtonText: "No"
     }).then(res=>{
       if (!res.isConfirmed) return;
-      $.post("controladores/servicio.php", { eliminar: id })
+      $.post("controladores/servicio.php", { anular: id })
         .done(function(resp){
           let data=null; try{ data=(typeof resp==="string")?JSON.parse(resp):resp; }catch(_){}
           if (!data || data.ok !== true){
-            if (window.mensaje_dialogo_info_ERROR) mensaje_dialogo_info_ERROR("No se pudo eliminar.");
-            else alert("No se pudo eliminar.");
+            if (window.mensaje_dialogo_info_ERROR) mensaje_dialogo_info_ERROR("No se pudo anular.");
+            else alert("No se pudo anular.");
             return;
           }
-          Swal.fire({ icon:"success", title:"Eliminado", timer:1200, showConfirmButton:false });
+          Swal.fire({ icon:"success", title:"Anulado", timer:1200, showConfirmButton:false });
           cargarTablaServicio();
         })
         .fail(function(xhr){
-          let msg = "Error al eliminar (HTTP "+xhr.status+").";
+          let msg = "Error al anular (HTTP "+xhr.status+").";
           try { const j=JSON.parse(xhr.responseText); if(j&&j.error) msg=j.error; }catch(_){}
           if (window.mensaje_dialogo_info_ERROR) mensaje_dialogo_info_ERROR(msg);
           else alert(msg);
         });
     });
   } else {
-    if (!confirm("¿Desea eliminar el registro?")) return;
-    $.post("controladores/servicio.php", { eliminar: id }).done(function(){ cargarTablaServicio(); });
+    if (!confirm("¿Desea anular el servicio?")) return;
+    $.post("controladores/servicio.php", { anular: id }).done(function(){ cargarTablaServicio(); });
   }
 }
 
@@ -313,4 +313,4 @@ window.mostrarAgregarServicio = mostrarAgregarServicio;
 window.agregarDetalle         = agregarDetalle;
 window.guardarServicio        = guardarServicio;
 window.editarServicio         = editarServicio;
-window.eliminarServicio       = eliminarServicio;
+window.anularServicio         = anularServicio;
