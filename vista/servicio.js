@@ -108,7 +108,11 @@ function mostrarAgregarServicio(){
       const prodTxt = ($("#producto_rel_txt").val() || "").trim();
 
       // Permitir que los valores numéricos se carguen con separadores de miles
-      const toNum = v => parseFloat(String(v || "0").replace(/\./g, "").replace(",", "."));
+
+      const toNum = v => parseFloat(String(v || "0")
+                                   .replace(/\s/g, "")
+                                   .replace(/\./g, "")
+
       const cant    = toNum($("#cant_servicio").val());
       const precio  = toNum($("#precio_servicio").val());
       const obs     = ($("#obs_detalle").val() || "").trim();
