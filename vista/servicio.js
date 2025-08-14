@@ -3,22 +3,31 @@
 function mostrarListarServicio(){
   const contenido = dameContenido("paginas/movimientos/servicio/servicios/listar.php");
   $(".contenido-principal").html(contenido);
+
+  $("#b_servicio").on("keypress", function(e){ if(e.which === 13) cargarTablaServicio(); });
+  $("#estado_lst_servicio").on("change", cargarTablaServicio);
+
   cargarTablaServicio();
 }
 
 function cargarTablaServicio(){
+  const buscar = $("#b_servicio").val()?.trim() || "";
+  const estado = $("#estado_lst_servicio").val() || "";
+
   $.ajax({
     url: "controladores/servicio.php",
     method: "POST",
-    data: { leer: 1 },
+    data: { leer: 1, buscar, estado },
     dataType: "json",
     success: function(lista){
       const $tb = $("#servicio_tb");
+      const $empty = $("#servicio_empty_state");
       $tb.empty();
       if (!Array.isArray(lista) || lista.length===0){
-        $tb.html("<tr><td colspan='6' class='text-center'>SIN REGISTROS</td></tr>");
+        $empty.removeClass("d-none");
         return;
       }
+      $empty.addClass("d-none");
       let filas = "";
       lista.forEach(item=>{
         filas += `<tr>
@@ -26,11 +35,13 @@ function cargarTablaServicio(){
           <td>${item.fecha_servicio}</td>
           <td class="text-start">${item.cliente || "-"}</td>
           <td class="text-end">${fmt0(item.total)}</td>
-          <td>${item.estado ?? ''}</td>
-
+          <td>${badgeEstado(item.estado)}</td>
           <td>
-            <button class='btn btn-sm btn-primary' onclick='editarServicio(${item.id_servicio}); return false;'>Editar</button>
-            <button class='btn btn-sm btn-danger' onclick='eliminarServicio(${item.id_servicio}); return false;'>Eliminar</button>
+            <div class="btn-group btn-group-sm" role="group">
+              <button class='btn btn-outline-secondary' onclick='imprimirServicio(${item.id_servicio}); return false;'>Imprimir</button>
+              <button class='btn btn-primary' onclick='editarServicio(${item.id_servicio}); return false;'>Editar</button>
+              <button class='btn btn-danger' onclick='eliminarServicio(${item.id_servicio}); return false;'>Eliminar</button>
+            </div>
           </td>
         </tr>`;
       });
@@ -41,6 +52,10 @@ function cargarTablaServicio(){
       $("#servicio_tb").html("<tr><td colspan='6' class='text-center'>ERROR</td></tr>");
     }
   });
+}
+
+function imprimirServicio(id){
+  window.open(`paginas/movimientos/servicio/servicios/imprimir.php?id=${encodeURIComponent(id)}`, "_blank", "noopener");
 }
 
 // ===== Agregar =====

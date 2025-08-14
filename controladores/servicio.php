@@ -126,7 +126,21 @@ function guardar($lista){
 function leer(){
     header('Content-Type: application/json; charset=utf-8');
     try {
-        $pdo = getPDO();
+        $pdo   = getPDO();
+        $where = '';
+        $params = [];
+
+        if (!empty($_REQUEST['estado'])) {
+            $where .= ' AND s.estado = :estado';
+            $params[':estado'] = $_REQUEST['estado'];
+        }
+
+        if (!empty($_REQUEST['buscar'])) {
+            $b = '%'.$_REQUEST['buscar'].'%';
+            $where .= ' AND (c.nombre_cliente LIKE :b OR s.id_servicio LIKE :b)';
+            $params[':b'] = $b;
+        }
+
         $sql = "SELECT s.id_servicio,
                        s.fecha_servicio,
                        c.nombre_cliente AS cliente,
@@ -134,9 +148,10 @@ function leer(){
                        s.estado
                 FROM servicios s
                 JOIN cliente_1 c ON c.cod_cliente = s.id_cliente
+                WHERE 1=1 {$where}
                 ORDER BY s.id_servicio DESC";
         $q = $pdo->prepare($sql);
-        $q->execute();
+        $q->execute($params);
         $rows = $q->fetchAll(PDO::FETCH_OBJ);
         echo json_encode($rows ?: []);
     } catch (Throwable $e) {
